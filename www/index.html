@@ -1,0 +1,3756 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="apple-touch.png">
+    <title>Magpie Alias</title>
+    <meta name="description" lang="uk" content="Гра в Alias українською, російською та англійською для вечірок і малих компаній">
+    <meta name="description" lang="ru" content="Игра в Alias для вечеринок и небольших компаний">
+    <meta name="description" lang="en" content="A fun Alias-like game for parties or small groups of players">
+    <meta name="author" content="Danylo Mysak">
+    <meta name="viewport" content="width=322">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700&display=swap&subset=cyrillic" rel="stylesheet">
+    <style type="text/css">
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: #61c5f5;
+            height: 100%;
+        }
+
+        * {
+            -webkit-tap-highlight-color: rgba(0,0,0,0); /* This and the following line are taken from the Internet */
+            -webkit-tap-highlight-color: transparent; /* For some Androids */
+        }
+
+        .noTransition {
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
+
+        #appContainer {
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+
+        .screenManager {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screenManager > .hiddenScreens {
+            display: none;
+        }
+
+        .screenManager > .screensActivityCover {
+            display: none;
+            z-index: 2;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .screenManager > .screens {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .screenManager > .screens.slide_back {
+            transition: transform 400ms;
+            -webkit-transition: -webkit-transform 400ms;
+        }
+
+        .screenManager > .screens.slide_fade {
+            transition: transform 400ms;
+            -webkit-transition: -webkit-transform 400ms;
+        }
+
+        @keyframes screen_fadeout {
+            0%, 30% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+
+        @-webkit-keyframes screen_fadeout {
+            0%, 30% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+
+        .screen {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .screen > .fade {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #61c5f5;
+            display: none;
+            z-index: 10;
+        }
+
+        .screen > .fade.out {
+            display: block;
+            animation: screen_fadeout 400ms;
+            -webkit-animation: screen_fadeout 400ms;
+        }
+
+        .screen > .header {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            height: 45px;
+            line-height: 45px;
+            background: #61c5f5;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            color: white;
+            font-size: 16px;
+            z-index: 1;
+        }
+
+        .screen > .content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background: #ecf1f4;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            color: black;
+            font-size: 20px;
+            z-index: 2;
+            overflow-x: hidden; /* Vertical scroll bar could cover the area and horizontal scroll could appear */
+            overflow-y: auto;
+        }
+
+        .screen > .content.startScreen {
+            background: #61c5f5;
+        }
+
+        .screen > .header ~ .content {
+            top: 45px;
+        }
+
+        .screen > .footer {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: white;
+            background: rgba(255, 255, 255, 0.9);
+            color: white;
+            font-size: 20px;
+            z-index: 3;
+            transition: transform 250ms;
+            -webkit-transition: -webkit-transform 250ms;
+        }
+
+        .screen > .footer.webkit_transition {   /* Chrome bug when animated elements would appear over footer */
+            -webkit-transform: translateX(0px) !important;
+            -webkit-transition: -webkit-transform 100000s;
+        }
+
+        .screen > .footer > .border {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: black;
+            opacity: 0.1;
+        }
+
+        .screen > .header > .inner, .screen > .footer > .inner {
+            position: relative;
+            height: 100%;
+            width: 320px;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        .screen > .content > .inner {
+            position: relative;
+            width: 320px;
+            margin: auto;
+        }
+
+        .button {
+            cursor: pointer;
+        }
+
+        .button > .button_cover {   /* For mobile devices where text under the finger could slow down the touchstart event */
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .screen > .header .left {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            text-align: left;
+            z-index: 3;
+        }
+
+        .screen > .header .center {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .screen > .header .right {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            text-align: right;
+            z-index: 2;
+        }
+
+        .screen > .header .left .button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: #61c5f5;
+        }
+
+        .screen > .header .left .button.back {
+            width: 45px;
+        }
+
+        .screen > .header .left .button.back svg {
+            position: absolute;
+            width: 11px;
+            height: 19px;
+            left: 17px;
+            top: 13px;
+        }
+
+        .screen > .header .left .button.back svg path {
+            fill: white;
+        }
+
+        .screen > .header .left .button.back.active svg path {
+            fill-opacity: 0.5;
+        }
+
+        .screen > .header .left .button.text {
+            padding: 0 8px;
+            overflow: hidden;
+        }
+
+        .screen > .header .left .button.text .button_container {
+            position: relative;
+        }
+
+        .screen > .header .left .button.text .button_container > span {
+            padding: 2px 7px 3px 7px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen > .header .left .button.text.active .button_container > span {
+            color: #61c5f5;
+        }
+
+        .screen > .header .left .button.text .button_container svg {
+            position: absolute;
+            left: -1px;
+            top: 0;
+            bottom: 0;
+            width: 200%;
+            z-index: 1;
+        }
+
+        .screen > .header .left .button.text .button_container svg rect {
+            fill: white;
+            fill-opacity: 0;
+            stroke: white;
+            stroke-opacity: 0.8;
+            stroke-width: 2;
+        }
+
+        .screen > .header .left .button.text.active .button_container svg rect {
+            fill-opacity: 1;
+            stroke-opacity: 1;
+        }
+
+        .screen > .header .right .button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background: #61c5f5;
+        }
+
+        .screen > .header .right .button.settings {
+            width: 58px;
+        }
+
+        .screen > .header .right .button.settings svg {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            right: 16px;
+            top: 9px;
+        }
+
+        .screen > .header .right .button.settings svg path {
+            stroke: white;
+        }
+
+        .screen > .header .right .button.settings.active svg path {
+            stroke-opacity: 0.5;
+        }
+
+        .screen > .header .right .button.points {
+            cursor: auto;
+        }
+
+        .screen > .header .right .button.points > span {
+            padding: 0 16px 0 7px;
+            white-space: nowrap;
+        }
+
+        .screen > .header .right .button.points svg {
+            display: inline;
+            padding: 0 7px 1px 0;
+        }
+
+        .screen > .header .right .button.points svg polygon {
+            fill: white;
+            fill-opacity: 0.6;
+        }
+
+        .screen > .header .center .caption {
+            font-size: 20px;
+        }
+
+        .screen > .header .center .smallCaption {
+        }
+
+        .screen > .footer .button {
+            position: absolute;
+            left: 32px;
+            right: 32px;
+            height: 44px;
+            line-height: 44px;
+            border-radius: 6px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .screen > .footer .button.normal {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+        }
+
+        .screen > .footer .button.bold {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: bold;
+        }
+
+        .screen > .footer .button.green {
+            background: rgb(54, 180, 25);   /* JIC */
+            background: rgba(54, 180, 25, 0.8);
+        }
+
+        .screen > .footer .button.green.active {
+            background: rgb(54, 180, 25);
+        }
+
+        .screen > .footer .button.blue {
+            background: rgb(25, 122, 180);  /* JIC */
+            background: rgba(25, 122, 180, 0.8);
+        }
+
+        .screen > .footer .button.blue.active {
+            background: rgb(25, 122, 180);
+        }
+
+        .screen > .content.startScreen > .c0 {
+            position: relative;
+            width: 320px;
+            margin: auto;
+            height: 100%;
+            display: table;
+            overflow: hidden;   /* Otherwise ghost pixel could be added to the height (apparently children's percentage rounding error) */
+        }
+
+        .screen > .content.startScreen > .c0 > .c1 {
+            display: table-cell;
+            height: 100%;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .screen > .content.startScreen .cs_top {
+            height: 16%;
+            margin-bottom: -39px;
+        }
+
+        .screen > .content.startScreen .c_logo {
+            height: 88px;
+        }
+
+        .screen > .content.startScreen .c_logo svg {
+            fill: white;
+        }
+
+        .screen > .content.startScreen .cs_logo_buttons {
+            height: 31%;
+            margin-bottom: -70px;
+        }
+
+        .screen > .content.startScreen .c_button {
+            position: relative;
+        }
+
+        .screen > .content.startScreen .c_button .button {
+            position: relative;
+            margin: auto;
+            width: 236px;
+            height: 44px;
+            line-height: 44px;
+            text-align: center;
+            font-size: 20px;
+            color: white;
+            z-index: 2;
+        }
+
+        .screen > .content.startScreen .c_button .button.active {
+            color: #61c5f5;
+        }
+
+        .screen > .content.startScreen .c_button.c_start .button {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: bold;
+        }
+
+        .screen > .content.startScreen .c_button.c_run .button {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+        }
+
+        .screen > .content.startScreen .c_button .button svg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .screen > .content.startScreen .c_button .button > span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen > .content.startScreen .c_button .button svg rect {
+            fill: white;
+            fill-opacity: 0;
+            stroke: white;
+            stroke-opacity: 0.8;
+            stroke-width: 2;
+        }
+
+        .screen > .content.startScreen .c_button .button.active svg rect {
+            fill-opacity: 1;
+            stroke-opacity: 1;
+        }
+
+        .screen > .content.startScreen .cs_buttons {
+            height: 24px;
+        }
+
+        .screen > .content.startScreen .c_settings {
+            height: 26px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen > .content.startScreen .c_settings .button {
+            position: absolute;
+            left: 138px;
+            top: -9px;
+            width: 44px;
+            height: 44px;
+        }
+
+        .screen > .content.startScreen .c_settings .button svg {
+            position: absolute;
+            left: 9px;
+            top: 9px;
+        }
+
+        .screen > .content.startScreen .c_settings .button svg path {
+            stroke: white;
+        }
+
+        .screen > .content.startScreen .c_settings .button.active svg path {
+            stroke-opacity: 0.5;
+        }
+
+        .screen > .content.startScreen .cs_buttons_settings {
+            height: 19%;
+            margin-top: -42px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen > .content.rulesScreen {
+            background: white;
+        }
+
+        .screen > .content.rulesScreen .c_rules {
+            position: relative;
+            width: 320px;
+            margin: auto;
+            padding: 12px 0 18px 0;
+        }
+
+        .screen > .content.rulesScreen .c_rules p {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            color: #3d424c;
+            margin: 12px 30px;
+            text-align: left;
+        }
+
+        .screen > .content.settingsScreen .c_inner1 {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .screen > .content.settingsScreen .c_inner2 {
+            position: relative;
+            margin: auto;
+            width: 320px;
+            height: 337px;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczp4bWw9Imh0dHA6Ly93d3cudzMub3JnL1hNTC8xOTk4L25hbWVzcGFjZSIgd2lkdGg9IjMyMHB4IiBoZWlnaHQ9IjMzOHB4Ij48cGF0aCBkPSJNMTYsMTE3LjUgbDI4OCwwIiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMSIgLz48cGF0aCBkPSJNMTYsMjI3LjUgbDI4OCwwIiBzdHJva2U9IiNlNWU1ZTUiIHN0cm9rZS13aWR0aD0iMSIgLz48L3N2Zz4=');
+        }
+
+        .screen > .content.settingsScreen .controlCaption {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            position: absolute;
+            z-index: 1;
+            left: 32px;
+            right: 30px;
+        }
+
+        .screen > .content.settingsScreen .controlCaption.c_language {
+            top: 24px;
+        }
+
+        .screen > .content.settingsScreen .controlCaption.c_words {
+            top: 140px;
+        }
+
+        .screen > .content.settingsScreen .controlCaption.c_time {
+            top: 250px;
+        }
+
+        .screen > .content.settingsScreen .controlCaption > .c_value {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 20px;
+            color: #3d424c;
+        }
+
+        .screen > .content.settingsScreen .c_control {
+            position: absolute;
+            left: 0;
+            z-index: 2;
+        }
+
+        .screen > .content.settingsScreen .c_control.c_language {
+            left: 32px;
+            top: 50px;
+        }
+
+        .screen > .content.settingsScreen .c_control.c_words {
+            top: 167px;
+        }
+
+        .screen > .content.settingsScreen .c_control.c_time {
+            top: 277px;
+        }
+
+        .screen > .content.teamsScreen > .inner > .teamListControl.c_empty + .c_footer {
+            display: none;
+        }
+
+        .screen > .content.wordsScreen > .c_words {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            bottom: 0;
+            padding-top: 4px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .screen > .content.wordsScreen > .c_words::after {
+            content: "";
+            display: block;
+            height: 68px;
+        }
+
+        .screen > .content.wordsScreen > .c_resources {
+            display: none;
+        }
+
+        .screen > .content.resultsScreen > .c_resources {
+            display: none;
+        }
+
+        .screen > .content.resultsScreen > .c_teams {
+            position: relative;
+            width: 320px;
+            margin: 20px auto 0 auto;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczp4bWw9Imh0dHA6Ly93d3cudzMub3JnL1hNTC8xOTk4L25hbWVzcGFjZSIgd2lkdGg9IjMyMHB4IiBoZWlnaHQ9IjUwcHgiPjxwYXRoIGQ9Ik0xNiw0OS41IEwzMDQsNDkuNSIgc3Ryb2tlPSIjZDRkOGRiIiBzdHJva2Utd2lkdGg9IjEiIC8+PC9zdmc+');
+        }
+
+        .screen > .content.resultsScreen > .c_teams::after {
+            content: "";
+            display: block;
+            height: 145px;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team {
+            position: relative;
+            height: 50px;
+            line-height: 49px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_caption {
+            position: absolute;
+            display: block;
+            top: 0;
+            height: 49px;
+            left: 30px;
+            right: 50px;
+            white-space: nowrap;
+            overflow: hidden;
+            color: #3d424c;
+            z-index: 1;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_points {
+            position: absolute;
+            display: block;
+            top: 0;
+            height: 49px;
+            right: 35px;
+            width: auto;
+            white-space: nowrap;
+            color: #8a8f99;
+            background: #ecf1f4;
+            z-index: 2;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_points > .c_inner {
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_points svg.c_star {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            left: -22px;
+            top: 19px;
+            fill: #ebb800;
+            z-index: 2;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_points svg.c_gradient {
+            position: absolute;
+            width: 60px;
+            height: 49px;
+            top: 0;
+            left: -52px;
+            z-index: 1;
+        }
+
+        .screen > .content.resultsScreen > .c_teams > .c_team > .c_points svg.c_gradient stop {
+            stop-color: #ecf1f4;
+        }
+
+        .languageControl {
+            position: absolute;
+            width: 256px;
+            height: 38px;
+            line-height: 38px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            color: #61c5f5;
+            text-align: center;
+        }
+
+        .languageControl svg path {
+            fill: white;    /* For correct rendering when stroke is fuzzy */
+            stroke: #61c5f5;
+            stroke-width: 1;
+        }
+
+        .languageControl .button {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 85px;
+        }
+
+        .languageControl .button.c0 {
+            left: 0;
+        }
+
+        .languageControl .button.c1 {
+            left: 85px;
+        }
+
+        .languageControl .button.c2 {
+            left: 170px;
+        }
+
+        .languageControl path.active {
+            fill: #dff3fc;
+        }
+
+        .languageControl.c_active_0 path.c0, .languageControl.c_active_1 path.c1, .languageControl.c_active_2 path.c2 {
+            fill: #dff3fc;
+        }
+
+        .languageControl.c_selected_0 path.c0, .languageControl.c_selected_1 path.c1, .languageControl.c_selected_2 path.c2 {
+            fill: #61c5f5 !important;
+        }
+
+        .languageControl.c_selected_0 .button.c0, .languageControl.c_selected_1 .button.c1, .languageControl.c_selected_2 .button.c2 {
+            color: white;
+            cursor: auto;
+        }
+
+        .checkboxControl {
+            position: relative;
+            width: 320px;
+            height: 44px;
+            line-height: 44px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            color: #3d424c;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .checkboxControl .button {
+            display: inline-block;
+            position: relative;
+        }
+
+        .checkboxControl .button .c_caption {
+            padding: 0 12px 0 50px;
+        }
+
+        .checkboxControl .button svg {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            left: 13px;
+            top: 9px;
+        }
+
+        .checkboxControl .button svg > .c_unchecked {
+            fill: #ccd2d8;
+        }
+
+        .checkboxControl .button.active svg > .c_unchecked {
+            fill: #b6bec5;
+        }
+
+        .checkboxControl .button svg > .c_checked {
+            fill: #4593c2;
+        }
+
+        .checkboxControl .button.active svg > .c_checked {
+            fill: #197ab4;
+        }
+
+        .checkboxControl.c_checked .button svg > .c_unchecked {
+            display: none;
+        }
+
+        .checkboxControl.c_unchecked .button svg > .c_checked {
+            display: none;
+        }
+
+        .sliderControl {
+            position: relative;
+            width: 320px;
+            height: 44px;
+        }
+
+        .sliderControl .c_line {
+            position: absolute;
+            width: 242px;
+            height: 8px;
+            left: 39px;
+            top: 18px;
+            background: #d8dde2;
+            border-radius: 4px;
+            z-index: 1;
+        }
+
+        .sliderControl .button {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            top: 0;
+            left: 21px;
+            z-index: 2;
+        }
+
+        .sliderControl .button svg {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            left: 8px;
+            top: 8px;
+        }
+
+        .sliderControl .button svg .c_outer {
+            fill: #4593c2;
+        }
+
+        .sliderControl .button svg .c_inner {
+            fill: white;
+        }
+
+        .inputControl {
+            position: relative;
+            height: 44px;
+            line-height: 44px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 20px;
+        }
+
+        .inputControl .button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .inputControl .button svg.c_frame {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .inputControl .button svg.c_frame rect {
+            fill: white;
+            stroke: black;
+            stroke-opacity: 0.12;
+            stroke-width: 1;
+        }
+
+        .inputControl .button.active svg.c_frame rect {
+            fill: #d4d9dc;
+        }
+
+        .inputControl .button .c_label {
+            position: absolute;
+            display: inline-block;
+            overflow: hidden;
+            left: 14px;
+            top: 0;
+            right: 37px;
+            color: #3d424c;
+            white-space: nowrap;
+            z-index: 2;
+        }
+
+        .inputControl .button .c_label.c_empty {
+            color: #b9bbbd;
+        }
+
+        .inputControl .button .c_label .c_hint {
+            display: none;
+        }
+
+        .inputControl .button .c_label.c_empty .c_hint {
+            display: inline;
+        }
+
+        .inputControl .button .c_label .c_value {
+            display: inline;
+        }
+
+        .inputControl .button .c_label.c_empty .c_value {
+            display: none;
+        }
+
+        .inputControl .button svg.c_gradient, .inputControl .button svg.c_gradient_active {
+            position: absolute;
+            top: 0;
+            right: 22px;
+            z-index: 3;
+        }
+
+        .inputControl .button svg.c_gradient_active {   /* Just changing stop-color isn't working in IE */
+            display: none;
+        }
+
+        .inputControl .button.active svg.c_gradient_active {
+            display: block;
+        }
+
+        .inputControl .button.active svg.c_gradient {
+            display: none;
+        }
+
+        .inputControl .button svg.c_gradient stop {
+            stop-color: white;
+        }
+
+        .inputControl .button svg.c_gradient_active stop {
+            stop-color: #d4d9dc;
+        }
+
+        .inputControl .button svg.c_pen {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 4;
+            fill: #61c5f5;
+        }
+
+        @keyframes wordControl_fadein {
+            0% {opacity: 0;}
+            50% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+
+        @-webkit-keyframes wordControl_fadein {
+            0% {opacity: 0;}
+            50% {opacity: 0;}
+            100% {opacity: 1;}
+        }
+
+        @keyframes wordControl_fadeout {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+
+        @-webkit-keyframes wordControl_fadeout {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+
+        .wordControl {
+            position: relative;
+            margin: auto;
+            width: 320px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 24px;
+            line-height: 30px;
+        }
+
+        .wordControl .c_word {
+            position: relative;
+            z-index: 3;
+            color: #3d424c;
+            display: inline-block;
+            margin: 13px 56px 17px 60px;
+            width: 204px;
+            overflow: hidden;
+            transition: color 250ms;
+            -webkit-transition: color 250ms;
+            float: left;    /* Otherwise there are gaps between neighboring .wordControls */
+        }
+
+        .wordControl .c_clear {
+            position: relative;
+            z-index: 3;
+            height: 0;
+            clear: left;
+        }
+
+        .wordControl.c_checked .c_word {
+            color: #5cc246;
+        }
+
+        .wordControl.c_deleted .c_word {
+            color: #ee8a8a !important;
+        }
+
+        .wordControl.c_deleted .c_word .c_inner {   /* Strike-through */
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczp4bWw9Imh0dHA6Ly93d3cudzMub3JnL1hNTC8xOTk4L25hbWVzcGFjZSIgd2lkdGg9IjFweCIgaGVpZ2h0PSIzMHB4Ij48cGF0aCBkPSJNMCwxOS41IEwxLDE5LjUiIHN0cm9rZT0iI2VlOGE4YSIgc3Ryb2tlLXdpZHRoPSIxIiAvPjwvc3ZnPg==');
+        }
+
+        .wordControl .c_cover {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .wordControl .button {
+            position: absolute;
+            z-index: 4;
+        }
+
+        .wordControl .button svg {
+            position: absolute;
+        }
+
+        .wordControl .button.c_guessing {
+            width: 58px;
+            height: 58px;
+            left: 3px;
+            top: 1px;
+        }
+
+        .wordControl .button.c_guessing svg {
+            width: 32px;
+            height: 32px;
+            left: 13px;
+            top: 13px;
+        }
+
+        .wordControl.c_deleted .button.c_guessing {
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .wordControl .button.c_guessing svg.c_checked {
+            display: none;
+            fill: #5cc246;
+        }
+
+        .wordControl .button.c_guessing.active svg.c_checked {
+            fill: #36b419;
+        }
+
+        .wordControl.c_checked .button.c_guessing svg.c_checked {
+            display: block;
+        }
+
+        .wordControl .button.c_guessing svg.c_unchecked {
+            fill: #ccd2d8;
+        }
+
+        .wordControl .button.c_guessing.active svg.c_unchecked {
+            fill: #b6bec5;
+        }
+
+        .wordControl.c_checked .button.c_guessing svg.c_unchecked {
+            display: none;
+        }
+
+        .wordControl .button.c_deleting {
+            width: 48px;
+            height: 44px;
+            top: 8px;
+        }
+
+        .wordControl .button.c_deleting.c_right {
+            right: 0;
+        }
+
+        .wordControl .button.c_deleting.c_left {
+            right: 264px;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .wordControl.c_info .button.c_deleting.c_right {
+            opacity: 0;
+            z-index: 1;
+            animation: wordControl_fadeout 250ms;
+            -webkit-animation: wordControl_fadeout 250ms;
+        }
+
+        .wordControl.c_info.c_undeleted .button.c_deleting.c_right {
+            animation: none;
+            -webkit-animation: none;
+        }
+
+        .wordControl.c_noInfo .button.c_deleting.c_right {
+            animation: wordControl_fadein 500ms;
+            -webkit-animation: wordControl_fadein 500ms;
+        }
+
+        .wordControl.c_noInfo.c_deleted .button.c_deleting.c_left {
+            animation: wordControl_fadeout 250ms;
+            -webkit-animation: wordControl_fadeout 250ms;
+        }
+
+        .wordControl.c_info.c_deleted .button.c_deleting.c_left {
+            opacity: 1;
+            z-index: 4;
+            animation: wordControl_fadein 500ms;
+            -webkit-animation: wordControl_fadein 500ms;
+        }
+
+        .wordControl .button.c_deleting svg.c_delete {
+            width: 16px;
+            height: 16px;
+            left: 16px;
+            top: 14px;
+            fill: #ccd2d8;
+        }
+
+        .wordControl .button.c_deleting.active svg.c_delete {
+            fill: #b6bec5;
+        }
+
+        .wordControl.c_deleted .button.c_deleting svg.c_delete {
+            display: none;
+        }
+
+        .wordControl .button.c_deleting svg.c_undo {
+            width: 17px;
+            height: 20px;
+            left: 15px;
+            top: 12px;
+            display: none;
+            fill: #b6bec5;
+        }
+
+        .wordControl .button.c_deleting.active svg.c_undo {
+            fill: #a1aab1;
+        }
+
+        .wordControl.c_deleted .button.c_deleting svg.c_undo {
+            display: block;
+        }
+
+        .wordControl .button.c_info {
+            width: 56px;
+            height: 54px;
+            right: 0;
+            top: 3px;
+            opacity: 0;
+            z-index: 1;
+        }
+
+        .wordControl.c_noInfo .button.c_info {
+            animation: wordControl_fadeout 250ms;
+            -webkit-animation: wordControl_fadeout 250ms;
+        }
+
+        .wordControl.c_info .button.c_info {
+            opacity: 1;
+            z-index: 4;
+            animation: wordControl_fadein 500ms;
+            -webkit-animation: wordControl_fadein 500ms;
+        }
+
+        .wordControl .button.c_info svg {
+            width: 24px;
+            height: 24px;
+            left: 16px;
+            top: 15px;
+            fill: #b6bec5;
+        }
+
+        .wordControl .button.c_info.active svg {
+            fill: #a1aab1;
+        }
+
+        .timer {
+            position: relative;
+            background: white;
+            height: 60px;
+            line-height: 58px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 28px;
+        }
+
+        .timer .c_border {
+            position: absolute;
+            z-index: 1;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .timer .c_time {
+            position: relative;
+            margin: auto;
+            z-index: 3;
+            display: block;
+            width: 320px;
+            text-align: center;
+            color: #3d424c;
+        }
+
+        .timer .c_time .c_inner {
+            position: relative;
+            display: inline-block;
+        }
+
+        .timer .c_time svg {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: -29px;
+            top: 21px;
+            fill: #b6bec5;
+        }
+
+        .timer .c_cover {
+            position: absolute;
+            z-index: 2;
+            left: 0;
+            top: 2px;
+            width: 100%;
+            bottom: 0;
+            background: #f63333;
+            opacity: 0;
+            transition: opacity 200ms;
+            -webkit-transition: opacity 200ms;
+        }
+
+        .timer.c_elapsed .c_time {
+            color: white;
+        }
+
+        .timer.c_elapsed .c_cover {
+            opacity: 1;
+        }
+
+        .timer.c_elapsed .c_time svg {
+            fill: #fdd6d6;
+        }
+
+        .controlCaption {
+            position: relative;
+            margin: auto;
+            height: 26px;
+            line-height: 26px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 14px;
+            color: #707580;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .newTeamControl {
+            position: relative;
+            margin: 18px auto 10px auto;
+            width: 288px;
+            height: 198px;
+            overflow: hidden;
+        }
+
+        .newTeamControl > .c_inner {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            bottom: 2px;
+            z-index: 1;
+        }
+
+        .newTeamControl > .c_inner svg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 125%;
+        }
+
+        .newTeamControl > .c_inner svg rect {
+            stroke: #b6bec5;
+            stroke-width: 2;
+            stroke-dasharray: 8,5.5;
+            fill: none;
+        }
+
+        .newTeamControl.c_button.c_active > .c_inner svg rect {
+            fill: #e1e7eb;
+        }
+
+        .newTeamControl > .c_edit, .newTeamControl > .c_button, .newTeamControl > .c_cover {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .newTeamControl > .c_edit, .newTeamControl > .c_button {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .newTeamControl > .c_edit {
+            z-index: 3;
+        }
+
+        .newTeamControl > .c_cover {
+            z-index: 2;
+        }
+
+        .newTeamControl > .c_button {
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .newTeamControl.c_button {
+            height: 54px;
+        }
+
+        .newTeamControl.c_button > .c_edit {
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .newTeamControl.c_button > .c_button {
+            z-index: 3;
+            opacity: 1;
+        }
+
+        .newTeamControl > .c_edit .inputControl {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+        }
+
+        .newTeamControl > .c_edit .controlCaption {
+            position: absolute;
+            left: 16px;
+            top: 70px;
+        }
+
+        .newTeamControl > .c_edit .languageControl {
+            position: absolute;
+            left: 16px;
+            top: 96px;
+        }
+
+        .newTeamControl > .c_edit > .button {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            bottom: 0;
+            height: 44px;
+            line-height: 44px;
+            background: #ecf1f4;
+            cursor: auto;
+        }
+
+        .newTeamControl.c_enabled > .c_edit > .button {
+            cursor: pointer;
+        }
+
+        .newTeamControl > .c_edit > .button .c_caption {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            color: #b6bec5;
+        }
+
+        .newTeamControl.c_enabled > .c_edit > .button .c_caption {
+            color: #5ac045;
+        }
+
+        .newTeamControl.c_enabled > .c_edit > .button.active .c_caption {
+            color: #ecf1f4;
+        }
+
+        .newTeamControl > .c_edit > .button svg {
+            stroke-width: 2;
+            stroke: #b6bec5;
+            fill: none;
+        }
+
+        .newTeamControl.c_enabled > .c_edit > .button svg {
+            stroke: #5ac045;
+        }
+
+        .newTeamControl.c_enabled > .c_edit > .button.active svg {
+            fill: #5ac045;
+        }
+
+        .newTeamControl > .c_button > .button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 54px;
+            line-height: 54px;
+        }
+
+        .newTeamControl > .c_button > .button .c_caption {
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            color: #8a8f99;
+        }
+
+        .teamListControl {
+            position: relative;
+            width: 320px;
+        }
+
+        .teamListControl.c_empty {
+            display: none;
+        }
+
+        .teamListControl > .c_caption {
+            height: 45px;
+        }
+
+        .teamListControl > .c_caption > .c_caption {
+            line-height: 45px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 18px;
+            color: #707580;
+            margin-left: 15px;
+            text-transform: uppercase;
+        }
+
+        .teamListControl > .c_list {
+            position: relative;
+        }
+
+        .teamListControl > .c_list > * {
+            border-bottom: 1px solid #c8cbce;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxuczp4bWw9Imh0dHA6Ly93d3cudzMub3JnL1hNTC8xOTk4L25hbWVzcGFjZSIgd2lkdGg9IjMyMHB4IiBoZWlnaHQ9IjUwcHgiPjxwYXRoIGQ9Ik0xNiwwLjUgTDMyMCwwLjUiIHN0cm9rZT0iI2U1ZTVlNSIgc3Ryb2tlLXdpZHRoPSIxIiAvPjwvc3ZnPg==') white;
+            /* <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="320px" height="50px"><path d="M16,0.5 L320,0.5" stroke="#e5e5e5" stroke-width="1" /></svg> */
+        }
+
+        .teamListControl > .c_list > .c_first {
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes teamList_movedown {
+            0% {transform: translateY(0px); -webkit-transform: translateY(0px);}
+            100% {transform: translateY(50px); -webkit-transform: translateY(50px);}
+        }
+
+        @-webkit-keyframes teamList_movedown {
+            0% {transform: translateY(0px); -webkit-transform: translateY(0px);}
+            100% {transform: translateY(50px); -webkit-transform: translateY(50px);}
+        }
+
+        .teamListControl.c_adding > .c_list > .c_first {
+            animation: teamList_movedown 250ms;
+            -webkit-animation: teamList_movedown 250ms;
+        }
+
+        .teamListControl > .c_list > .c_second {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            z-index: 1;
+        }
+
+        .teamListControl > .c_list > * > .c_team {
+            position: relative;
+            height: 50px;
+            cursor: pointer;
+        }
+
+        .teamListControl > .c_list > * > .c_team.c_selected {
+            background: #d4d9dc;
+            cursor: default;
+        }
+
+        .teamListControl > .c_list > * > .c_team::before, .teamListControl.c_adding > .c_list::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            height: 1px;
+            background: #c8cbce;
+            display: none;
+        }
+
+        .teamListControl.c_adding > .c_list::before {
+            display: block;
+            z-index: 3;
+        }
+
+        .teamListControl > .c_list > * > .c_team:first-child::before, .teamListControl > .c_list > * > .c_team.c_selected::before, .teamListControl > .c_list > * > .c_team.c_selected + .c_team::before {
+            display: block;
+        }
+
+        .teamListControl.c_adding > .c_list > .c_first > .c_team:first-child::before {
+            display: none;
+        }
+
+        .teamListControl.c_adding > .c_list > .c_first > .c_team.c_selected:first-child::before {
+            display: block;
+        }
+
+        .teamListControl > .c_list > * > .c_team .c_caption {
+            position: absolute;
+            left: 30px;
+            right: 0;
+            top: 1px;
+            height: 49px;
+            line-height: 49px;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            color: #3d424c;
+            white-space: nowrap;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .teamListControl > .c_list > * > .c_team svg {
+            position: absolute;
+            right: 0;
+            top: 1px;
+            width: 20px;
+            height: 49px;
+            z-index: 2;
+        }
+
+        .teamListControl > .c_list > * > .c_team stop {
+            stop-color: white;
+        }
+
+        .teamListControl > .c_list > * > .c_team.c_selected stop {
+            stop-color: #d4d9dc;
+        }
+
+    </style>
+
+    <script src="jquery-2.0.3.min.js"></script>
+    <script src="words.js"></script>
+
+    <script type="text/javascript">
+
+        /**
+         * Interface language helper.
+         * @param {object} container application container (jQuery element)
+         * @param {string} language initial language
+         * @returns {InterfaceLanguageManager}
+         * @constructor
+         */
+        function InterfaceLanguageManager(container, language)
+        {
+            /**
+             * Sets new interface language.
+             * @param {string} language two-letter code of a language
+             */
+            this.setLanguage = function(language){
+                currentLanguage = language;
+                aThis.updateElements();
+            };
+
+            /**
+             * Gets current interface language.
+             * @returns {string} language two-letter code of a language
+             */
+            this.getLanguage = function(){
+                return currentLanguage;
+            };
+
+            /**
+             * Gets string for a given resource name.
+             * @param {string} resource resource name
+             * @returns {string}
+             */
+            this.getString = function (resource){
+                return resources[currentLanguage][resource];
+            };
+
+            /**
+             * Makes element being managed by this manager (i.e. interactively change contents according to current language).
+             * @param {object} element jQuery object
+             * @param {string} resource name of the text resource to put into element
+             * @param {string} type (optional) either 'text' (by default) or 'title'
+             */
+            this.manage = function(element, resource, type){
+                if (type !== 'title')
+                    type = 'text';
+                element.attr('data-lang', type + ':' + resource);
+            };
+
+            /**
+             * Updates contents of all managed elements with respect to the current language.
+             */
+            this.updateElements = function(){
+                container.find('[data-lang]').each(function(){
+                    var element = $(this);
+                    var a = element.attr('data-lang').split(':');
+                    var s = aThis.getString(a[1]);
+                    switch (a[0])
+                    {
+                        case 'text':
+                            element.html(s);
+                            break;
+                        case 'title':
+                            element.attr('title', s);
+                            break;
+                    }
+                });
+            };
+
+            var aThis = this;
+            var currentLanguage = language;
+
+            var resources = {
+                'uk': {
+                    'tmp_stop_round_0': 'Ви хочете завершити раунд?',
+                    'tmp_stop_round': 'Ви хочете завершити раунд? Результати не буде збережено.',
+
+                    'app_credits': 'Розробка — Данило Мисак|Дизайн — Антон Колесников|Редактор текстів — Даниїл Бо&#769;гдан',
+                    'app_description': 'Гра в Еліас українською, російською та англійською для вечірок і малих компаній',
+                    'back': 'Назад',
+                    'continue': 'Далі',
+                    'create_team': 'Створити команду',
+                    'delete_team': 'Видалити',
+                    'delete_team_x': 'Видалити команду',
+                    'dismiss': 'Гаразд',
+                    'edit_teams': 'Редаг.',
+                    'editing_done': 'Готово',
+                    'editing_teams': 'Редагування',
+                    'finish': 'Завершити гру',
+                    'finish_alert': 'Результати не буде збережено.',
+                    'finish_cancel': 'Скасувати',
+                    'finish_confirm': 'Завершити',
+                    'language': 'Мова',
+                    'language_main': 'Мова інтерфейсу',
+                    'new_team': 'Нова команда',
+                    'old_browser': 'На жаль, ваш браузер занадто старий, щоб у ньому грати в Magpie Alias.',
+                    'orientation_notification': 'Грати в Magpie Alias значно веселіше з книжковою орієнтацією екрана.',
+                    'pick_team': 'Вибір команди',
+                    'results_button': 'Результати',
+                    'results_screen': 'Результати',
+                    'round_words': 'Слів у раунді',
+                    'round_time': 'Тривалість раунду',
+                    'rules_button': 'Правила',
+                    'rules_screen': 'Правила',
+                    'rules_text': '<p>У Magpie&nbsp;Alias гра­ють ко­ман­да­ми що­най­мен­ше по два грав­ці в ко­ж­ній. Гра скла­да­є­ть­ся з ра­ун­дів: під час ра­ун­ду один з грав­ців на­ма­га­є­ть­ся по­яс­ни­ти ре­ш­ті чле­нів сво­єї ко­ман­ди сло­ва, які він ба­чить на ек­ра­ні,&nbsp;— тоб­то зро­би­ти так, щоб ко­ман­да ці сло­ва від­га­да­ла. На­зи­ва­ти без­по­се­ре­д­ньо са­мі сло­ва або спіль­но­ко­ре­не­ві з ни­ми гра­вець пра­ва не має (як­що він це все ж зро­бив, від­по­від­не сло­во вва­жа­ють не­від­га­да­ним). Кіль­кість слів і час, який є в ко­ман­ди на від­га­ду­ван­ня, мо­ж­на змі­ни­ти в на­ла­ш­ту­ван­нях.</p><p>За­зви­чай ра­ун­ди про­хо­дять по ко­лу, тоб­то гра­ють пер­ша, дру­га, тре­тя, ..., ос­тан­ня ко­ман­ди, а по­тім зно­ву пер­ша, дру­га, тре­тя і&nbsp;т.&nbsp;д. При цьо­му грав­ці, які по­яс­ню­ють сло­ва, та­кож змі­ню­ю­ть­ся: на пер­шо­му ко­лі по­яс­нює один член ко­ман­ди, на дру­го­му ко­лі вже ін­ший і&nbsp;т.&nbsp;д. За ко­ж­не від­га­да­не під час ра­ун­ду сло­во ко­ман­ді на­ра­хо­ву­ють по од­но­му оч­ку. Ви­грає та ко­ман­да, яка пі­с­ля пев­ної кіль­ко­сті кіл має най­біль­шу су­мар­ну кіль­кість очок.</p><p>Гра до­с­ту­п­на трьо­ма мо­ва­ми: ук­ра­їн­сь­кою, ро­сій­сь­кою та ан­глій­сь­кою. Ко­ж­на ко­ман­да мо­же ок­ре­мо ви­бра­ти со­бі мо­ву, якою гра­ти­ме.</p>',
+                    'settings_button': 'Налаштування',
+                    'settings_screen': 'Налаштування',
+                    'sound': 'Звуковий сигнал таймера',
+                    'start': 'Розпочати гру',
+                    'start_round': 'Розпочати раунд',
+                    'stop': 'Стоп',
+                    'stop_cancel': 'Продовжити раунд',
+                    'stop_finish': 'Закінчити раунд',
+                    'stop_ignore': 'Не зберігати',
+                    'stop_save': 'Зберегти результати',
+                    'team_name': 'Назва команди',
+                    'teams_screen': 'Команди',
+                    'word_info': 'Визначення слова (в інтернеті)'
+                },
+                'ru': {
+                    'tmp_stop_round_0': 'Вы хотите завершить раунд?',
+                    'tmp_stop_round': 'Вы хотите завершить раунд? Результаты не будут сохранены.',
+
+                    'app_credits': 'Разработка — Даныло Мысак|Дизайн — Антон Колесников|Редактор текстов — Даниил Бо&#769;гдан',
+                    'app_description': 'Игра в Элиас для вечеринок и небольших компаний',
+                    'back': 'Назад',
+                    'continue': 'Продолжить',
+                    'create_team': 'Создать команду',
+                    'delete_team': 'Удалить',
+                    'delete_team_x': 'Удалить команду',
+                    'dismiss': 'Ясно',
+                    'edit_teams': 'Редакт.',
+                    'editing_done': 'Готово',
+                    'editing_teams': 'Редактирование',
+                    'finish': 'Закончить игру',
+                    'finish_alert': 'Результаты не будут сохранены.',
+                    'finish_cancel': 'Отмена',
+                    'finish_confirm': 'Закончить',
+                    'language': 'Язык',
+                    'language_main': 'Язык интерфейса',
+                    'new_team': 'Новая команда',
+                    'old_browser': 'К сожалению, ваш браузер слишком стар для того, чтобы в нем играть в Magpie Alias.',
+                    'orientation_notification': 'Игра в Magpie Alias проходит веселее при книжной ориентации экрана.',
+                    'pick_team': 'Выбор команды',
+                    'results_button': 'Результаты',
+                    'results_screen': 'Результаты',
+                    'round_words': 'Слов в раунде',
+                    'round_time': 'Длительность раунда',
+                    'rules_button': 'Правила',
+                    'rules_screen': 'Правила',
+                    'rules_text': '<p>В Magpie&nbsp;Alias иг­ра­ют ко­ман­да­ми, в каж­дой хо­тя бы по два иг­ро­ка. Иг­ра про­хо­дит в не­с­коль­ко ра­ун­дов: во вре­мя ра­ун­да один из иг­ро­ков объ­яс­ня­ет ос­таль­ным чле­нам сво­ей ко­ман­ды сло­ва, ко­то­рые он ви­дит на эк­ра­не,&nbsp;— то есть пы­та­ет­ся до­бить­ся то­го, что­бы ко­ман­да эти сло­ва от­га­да­ла. На­зы­вать не­по­сред­с­т­вен­но са­ми сло­ва или од­но­ко­рен­ные с ни­ми иг­рок пра­ва не име­ет (ес­ли он это все же сде­лал, со­от­вет­с­т­ву­ю­щее сло­во счи­та­ет­ся не­от­га­дан­ным). Ко­ли­че­с­т­во слов и вре­мя, ко­то­рое есть у ко­ман­ды на от­га­ды­ва­ние, мож­но из­ме­нить в на­с­т­рой­ках.</p><p>Обыч­но ра­ун­ды про­хо­дят по кру­гу, то есть иг­ра­ют пер­вая, вто­рая, тре­тья, ..., по­след­няя ко­ман­ды, а за­тем сно­ва пер­вая, вто­рая, тре­тья и&nbsp;т.&nbsp;д. К то­му же ме­ня­ют­ся иг­ро­ки, объ­яс­ня­ю­щие сло­ва: на пер­вом кру­ге объ­яс­ня­ет один член ко­ман­ды, на вто­ром кру­ге уже дру­гой и&nbsp;т.&nbsp;д. За каж­дое от­га­дан­ное во вре­мя ра­ун­да сло­во ко­ман­де на­чис­ля­ют по од­но­му оч­ку. Вы­иг­ры­ва­ет та ко­ман­да, ко­то­рая по­с­ле оп­ре­де­лен­но­го чи­с­ла кру­гов на­бра­ла наи­боль­шее сум­мар­ное ко­ли­че­с­т­во оч­ков.</p><p>Иг­ра до­с­туп­на на рус­ском, ук­ра­ин­с­ком и ан­глий­с­ком язы­ках. Каж­дая ко­ман­да мо­жет от­дель­но вы­брать язык, на ко­то­ром бу­дет иг­рать.</p>',
+                    'settings_button': 'Настройки',
+                    'settings_screen': 'Настройки',
+                    'sound': 'Звуковой сигнал таймера',
+                    'start': 'Начать игру',
+                    'start_round': 'Начать раунд',
+                    'stop': 'Стоп',
+                    'stop_cancel': 'Продолжить раунд',
+                    'stop_finish': 'Завершить раунд',
+                    'stop_ignore': 'Не сохранять',
+                    'stop_save': 'Сохранить результаты',
+                    'team_name': 'Название команды',
+                    'teams_screen': 'Команды',
+                    'word_info': 'Определение слова (в интернете)'
+                },
+                'en': {
+                    'tmp_stop_round_0': 'Do you want to end the round?',
+                    'tmp_stop_round': 'Do you want to end the round? The results won’t be saved.',
+
+                    'app_credits': 'Developed by Danylo Mysak|Designed by Anton Kolesnykov|Copy edited by Danyil Bohdan', // Credits (currently used only in Google Play app's description)
+                    'app_description': 'A fun Alias-like game for parties or small groups of players',  // Short description of the app (currently used only in meta tags)
+                    'back': 'Back', // Hint for the back button
+                    'continue': 'Continue', // Continue button on the results screen
+                    'create_team': 'Create team',  // Create team button on the teams screen
+                    'delete_team': 'Delete',    // Delete button on the teams screen
+                    'delete_team_x': 'Delete the team', // Hint for the crosses on the teams screen
+                    'dismiss': 'Dismiss',   // Dismiss button of the orientation notification box
+                    'edit_teams': 'Edit',   // Edit "button" on the teams screen
+                    'editing_done': 'Done', // Done "button" on the teams screen
+                    'editing_teams': 'Editing teams',   // Team list caption when in editing mode (teams screen)
+                    'finish': 'Finish the game',    // Game finishing button on the results screen
+                    'finish_alert': 'The results won’t be saved.', // Text of the alert that pops up after Finish game button is pressed
+                    'finish_cancel': 'Cancel',    // Cancel button of the finish game alert box
+                    'finish_confirm': 'End game',   // Confirm button of the finish game alert box
+                    'language': 'Language', // Team's language of choice caption
+                    'language_main': 'Main language',   // Language of the app caption
+                    'new_team': 'New team', // New team button on the teams screen
+                    'old_browser': 'Unfortunately, your browser is outdated and can not run Magpie Alias.',    // Stub page for browsers not supporting SVG, animations etc.
+                    'orientation_notification': 'Magpie Alias is best played in portrait mode.', // Orientation notification box
+                    'pick_team': 'Pick a team',  // Team list caption on the teams screen
+                    'results_button': 'Results',   // Go-to-results button on the words screen
+                    'results_screen': 'Results',   // Caption for the results screen
+                    'round_words': 'Words per round',   // Words per round setting caption
+                    'round_time': 'Round duration', // Round duration setting caption
+                    'rules_button': 'Rules',   // Rules button on the start screen
+                    'rules_screen': 'Rules',   // Rules screen caption
+                    'rules_text': '<p>Mag­pie&nbsp;Alias is a game played in teams of at least two play­ers each. The game is played in rounds: each round one of the play­ers tries to ex­plain to the rest of their team the words the game gives them. The ex­plain­ing player must not use the words them­selves or their de­riv­at­ives (if this rule is broken the word in ques­tion is crossed out and dis­carded for the round). A team earns one point for every word they guess cor­rectly. Nor­mally teams take turns guess­ing and each round they ro­tate the play­ers who ex­plain the words to them. The team that earns the most points after sev­eral sets of rounds wins.</p><p>How long a round lasts and how many words are presen­ted each round can be ad­jus­ted on the set­tings screen.</p>',
+                                  // Rules screen content AND Google Play app's description
+                    'settings_button': 'Settings', // Settings button hint for the start screen AND header of the results screen
+                    'settings_screen': 'Settings', // Caption of the settings screen
+                    'sound': 'Timer sound', // Sound enabling checkbox caption (on the settings screen)
+                    'start': 'Start a new game',  // Game starting button on the start screen
+                    'start_round': 'Begin the round',   // Round starting button on the teams screen
+                    'stop': 'Stop', // Stop button on the words screen
+                    'stop_cancel': 'Resume the round', // Cancel button in the stop-the-round box
+                    'stop_finish': 'End this round',    // Quit button in the stop-the-round box (takes place of the save and ignore buttons when there are no correctly guessed words yet)
+                    'stop_ignore': 'Don’t save the results',    // Ignore results button in the stop-the-round box
+                    'stop_save': 'Save current results',    // Save results button in the stop-the-round box
+                    'team_name': 'Team name',   // Hint caption for the team name field
+                    'teams_screen': 'Teams',   // Caption for the teams screen
+                    'word_info': 'Define the word (on the Internet)'    // Hint for the info buttons on the words screen
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Language selection control.
+         * @param {string} selectedLanguage initially selected language ('en', 'ru' or 'uk')
+         * @returns {LanguageControl}
+         * @constructor
+         * LanguageControl.container is (jQuery) DIV container for the control. The following event is available:
+         *         'selected_language_changed' (single additional argument — the new language ('en', 'ru' or 'uk'))
+         */
+        function LanguageControl(selectedLanguage)
+        {
+            /**
+             * Retrieves current selection.
+             * @returns {string} currently selected language ('en', 'ru' or 'uk')
+             */
+            this.getLanguage = function(){
+                return languages[selected];
+            };
+
+            /**
+             * Changes selection.
+             * @param {string} newSelectedLanguage new selected language ('en', 'ru' or 'uk')
+             */
+            this.selectLanguage = function(newSelectedLanguage){
+                selectLanguageByIndex(languages.indexOf(newSelectedLanguage));
+            };
+
+            /**
+             * Changes selection.
+             * @param {number} n index of the new selected language in the languages array
+             */
+            var selectLanguageByIndex = function(n){
+                if (n != selected)
+                {
+                    container.removeClass('c_selected_' + selected).addClass('c_selected_' + n);
+                    selected = n;
+                    container.trigger('selected_language_changed', [languages[n]]);
+                }
+            };
+
+            var languages = ['en', 'ru', 'uk'];
+            var container = $('<div class="languageControl"></div>');
+            this.container = container;
+            container.append(
+                    '<div class="button c0"><div class="button_cover"></div><span>ENG</span></div>' +
+                    '<div class="button c1"><div class="button_cover"></div><span>РУС</span></div>' +
+                    '<div class="button c2"><div class="button_cover"></div><span>УКР</span></div>' +
+
+                    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="256px" height="38px" viewBox="0 0 256 38">' +
+                    '<path class="c0" d="M0,0 m85.5,0.5 l0,37 l-81,0 a4,4 0 0,1 -4,-4 l0,-29 a4,4 0 0,1 4,-4 z" />' +
+                    '<path class="c1" d="M0,0 m85.5,0.5 l0,37 l85,0 l0,-37 z" />' +
+                    '<path class="c2" d="M256,0 m-85.5,0.5 l0,37 l81,0 a4,4 0 0,0 4,-4 l0,-29 a4,4 0 0,0 -4,-4 z" />' +
+                    '</svg>'
+            );
+
+            var selected = languages.indexOf(selectedLanguage);
+            container.addClass('c_selected_' + selected);
+
+            /* Highlighting active buttons (purely CSS way of doing it with sibling selectors doesn't work in old WebKit): */
+            for (var i = 0; i < 3; i++)
+            {
+                container.find('.button.c' + i).on('button_activated', (function(n){return function(){
+                    container.addClass('c_active_' + n);
+                };})(i)).on('button_deactivated', (function(n){return function(){
+                    container.removeClass('c_active_' + n);
+                };})(i)).on('click', (function(n){return function(){
+                    selectLanguageByIndex(n);
+                };})(i));
+            }
+
+            return this;
+        }
+
+        /**
+         * Checkbox-with-text control.
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {string} text resource's name
+         * @param {boolean} checked initial state
+         * @returns {CheckboxControl}
+         * @constructor
+         * CheckboxControl.container is (jQuery) DIV container for the control. The following event is available:
+         *         'checkbox_state_changed' (single additional argument — whether checkbox is now checked)
+         */
+        function CheckboxControl(interfaceLanguageManager, text, checked)
+        {
+            var container = $('<div class="checkboxControl"></div>');
+            this.container = container;
+            container.append(
+                    '<div class="button"><div class="button_cover"></div>' +
+                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="26px" height="26px" viewBox="0 0 26 26" enable-background="new 0 0 26 26" xml:space="preserve"><path class="c_checked" d="M22,0H4C1.794,0,0,1.794,0,4v18c0,2.206,1.794,4,4,4h18c2.206,0,4-1.794,4-4V4C26,1.794,24.206,0,22,0z M12.332,21L5,13.708l1.867-2.699l5.258,5.032l8.291-11.525l1.981,2.601L12.332,21z"/><g class="c_unchecked"><path d="M22,0H4C1.794,0,0,1.794,0,4v18c0,2.206,1.794,4,4,4h18c2.206,0,4-1.794,4-4V4C26,1.794,24.206,0,22,0z M24,22 c0,1.105-0.895,2-2,2H4c-1.105,0-2-0.895-2-2V4c0-1.105,0.895-2,2-2h18c1.105,0,2,0.895,2,2V22z"/><polygon points="12.355,16.352 7.097,11.32 5.25,13.708 12.582,21 22.52,7.291 20.646,4.827 	"/></g></svg>' +
+                    '<span class="c_caption"></span>' +
+                    '</div>'
+            );
+            interfaceLanguageManager.manage(container.find('.button .c_caption'), text);
+            container.addClass(checked ? 'c_checked' : 'c_unchecked');
+            container.find('.button').on('click', function(){
+                if (checked)
+                {
+                    container.removeClass('c_checked').addClass('c_unchecked');
+                    checked = false;
+                } else
+                {
+                    container.removeClass('c_unchecked').addClass('c_checked');
+                    checked = true;
+                }
+                container.trigger('checkbox_state_changed', [checked]);
+            });
+            return this;
+        }
+
+        /**
+         * Slider control.
+         * @param {ScreenManager} screenManager
+         * @param {number} positions number of available positions (at least 2)
+         * @param {number} currentPosition index of initial position (0-based)
+         * @returns {SliderControl}
+         * @constructor
+         * SliderControl.container is (jQuery) DIV container for the control. The following event is available:
+         *         'slider_position_changed' (single additional argument — index of the new position (0-based))
+         */
+        function SliderControl(screenManager, positions, currentPosition)
+        {
+            var container = $('<div class="sliderControl"></div>');
+            this.container = container;
+            container.append('<div class="c_line"></div><div class="button"><div class="button_cover"></div><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="28px" height="28px" viewBox="0 0 28 28" enable-background="new 0 0 28 28" xml:space="preserve"><g><circle class="c_outer" fill-rule="evenodd" clip-rule="evenodd" cx="14" cy="14" r="13"/><circle class="c_inner" fill-rule="evenodd" clip-rule="evenodd" fill="#F6F6F6" cx="14" cy="14" r="5"/></g></svg></div>');
+            var button = container.find('.button');
+            var width = 234, gap = width / (positions - 1);
+            /**
+             * Moves button according to the value of currentPosition.
+             */
+            var updateButtonPosition = function(){
+                var left = Math.round(width * currentPosition / (positions - 1));
+                button.css({
+                    'transform': 'translateX(' + left + 'px)',
+                    '-webkit-transform': 'translateX(' + left + 'px)'
+                });
+            };
+            button.addClass('noTransition');    // JIC
+            updateButtonPosition();
+            button.removeClass('noTransition');
+
+            var started = false, initialX, initialPosition, initialCursor, body = $('body');
+            var onStart = function(event){
+                if (started)
+                    onFinish();
+                started = true;
+                initialX = (event.pageX !== undefined ? event.pageX : event.originalEvent.changedTouches[0].pageX);
+                initialPosition = currentPosition;
+                initialCursor = body.css('cursor');
+                body.css('cursor', 'pointer');
+                body.on('mouseup mouseleave', onFinish);
+                body.on('mousemove', onMove);
+            };
+            var onMove = function(event){
+                var currentX = (event.pageX !== undefined ? event.pageX : event.originalEvent.changedTouches[0].pageX);
+                var newPosition = initialPosition + Math.floor((currentX - initialX) / screenManager.scale / gap + 0.5);
+                if (newPosition != currentPosition && newPosition >= 0 && newPosition < positions)
+                {
+                    currentPosition = newPosition;
+                    updateButtonPosition();
+                    container.trigger('slider_position_changed', [currentPosition]);
+                }
+            };
+            var onFinish = function(){
+                if (started)
+                {
+                    started = false;
+                    body.css('cursor', initialCursor);
+                    body.off('mouseup mouseleave', onFinish);
+                    body.off('mousemove', onMove);
+                }
+            };
+            container.find('.button').on('touchstart mousedown', onStart).on('touchmove', onMove).on('touchend touchcancel', onFinish);
+            return this;
+        }
+
+        /**
+         * String helper functions.
+         * @returns {StringHelper}
+         * @constructor
+         */
+        function StringHelper()
+        {
+            /**
+             * Trims text, removes repeated spaces and replaces <, > and & characters with &lt;, &gt; and &amp; respectively.
+             * @param {string} value
+             * @return {string}
+             */
+            this.prepare = function(value){
+                return value.replace(/^\s+/, '').replace(/\s+$/, '').replace(/\s+/g, ' ').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            };
+
+            /**
+             * Converts value prepared by StringHelper.prepare to the plain text.
+             * @param {string} value
+             * @return {string}
+             */
+            this.unprepare = function(value){
+                return value.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+            };
+
+            /**
+             * Puts ellipsis after 10 characters of string if it contains more than 11 characters
+             * @param {string} s the string
+             * @param {number} afterCharacter number of characters before the ellipsis
+             * @param {number} maxCharacters maximum number of characters which requires no ellipsis
+             * @returns {string}
+             */
+            this.ellipsis = function(s, afterCharacter, maxCharacters){
+                s = aThis.unprepare(s);
+                return aThis.prepare(s.length <= maxCharacters ? s: s.substr(0, afterCharacter).replace(/\s+$/, '') + '...');
+            };
+
+            var aThis = this;
+            return this;
+        }
+
+        /**
+         * Text input-replacement control.
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {number} width width of control in pixels (including borders)
+         * @param {string} hint string resource name for the hint (it appears instead of text when no text is entered)
+         * @param {string} value initial text
+         * @returns {InputControl}
+         * @constructor
+         * InputControl.container is (jQuery) DIV container for the control. The following event is available:
+         *         'input_value_changed' (single additional argument — the new value (prepared with StringHelper))
+         */
+        function InputControl(interfaceLanguageManager, width, hint, value)
+        {
+            /**
+             * Sets new value for the control.
+             * @param {string} newValue
+             */
+            this.setValue = function(newValue){
+                newValue = stringHelper.prepare(newValue);
+                if (newValue != value)
+                {
+                    label.children('.c_value').html(newValue);  // .html() is used instead of .text() because it should be safe anyway (and if not, it requires investigation anyway)
+                    if (value == '')
+                        label.removeClass('c_empty');
+                    if (newValue == '')
+                        label.addClass('c_empty');
+                    value = newValue;
+                    container.trigger('input_value_changed', [value]);
+                }
+            };
+
+            /**
+             * Retrieves current input.
+             * @returns {string} (empty string on no value)
+             */
+            this.getValue = function(){
+                return value;
+            };
+
+            /**
+             * Forces value-adjustment box to appear.
+             */
+            this.forceChange = function(){
+                button.trigger('click');
+            };
+
+            var stringHelper = new StringHelper();
+            value = stringHelper.prepare(value);
+
+            var container = $('<div class="inputControl"></div>');
+            this.container = container;
+            container.css('width', width + 'px');
+            var gradientId = 'inputControl_' + Math.floor(1000000 * Math.random()) + '_' + Math.floor(1000000 * Math.random());
+            container.append(
+                '<div class="button"><div class="button_cover"></div>' +
+                '<svg class="c_frame" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="' + width + 'px" height="44px"><rect x="0.5" y="0.5" rx="4" ry="4" width="' + (width - 1) + '" height="43"></rect></svg>' +
+                '<svg class="c_pen" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="20px" height="20px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve"><g><path d="M5.94,18.898L5.94,18.898L0,20l1.198-5.868l0,0L5.94,18.898z M15.258,0L13.13,2.138l4.742,4.766L20,4.766L15.258,0z M2.261,13.064l4.742,4.766l9.807-9.857l-4.742-4.766L2.261,13.064z"/></g></svg>' +
+                '<svg class="c_gradient" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="40px" height="44px"><defs><linearGradient x1="0%" y1="0%" x2="100%" y2="0%" id="' + gradientId + '_1"><stop offset="0%" style="stop-opacity:0" /><stop offset="50%" style="stop-opacity:1" /><stop offset="100%" style="stop-opacity:1" /></linearGradient></defs><rect x="0" y="1.5" width="40" height="41" fill="url(#' + gradientId + '_1)"></rect></svg>' +
+                '<svg class="c_gradient_active" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="40px" height="44px"><defs><linearGradient x1="0%" y1="0%" x2="100%" y2="0%" id="' + gradientId + '_2"><stop offset="0%" style="stop-opacity:0" /><stop offset="50%" style="stop-opacity:1" /><stop offset="100%" style="stop-opacity:1" /></linearGradient></defs><rect x="0" y="1.5" width="40" height="41" fill="url(#' + gradientId + '_2)"></rect></svg>' +
+                '<span class="c_label"><span class="c_hint"></span><span class="c_value">' + value + '</span></span>' +
+                '</div>'
+            );
+            var label = container.find('.c_label');
+            if (value == '')
+                label.addClass('c_empty');
+            interfaceLanguageManager.manage(label.children('.c_hint'), hint);
+
+            var aThis = this, button = container.find('.button');
+            button.on('click', function(){
+                var newValue = prompt(stringHelper.unprepare(label.children('.c_hint').text()) + ':', stringHelper.unprepare(value)); // Hint can not be prestored in variable because of localization
+                if (newValue === null)
+                    return;
+                aThis.setValue(newValue);
+            });
+
+            return this;
+        }
+
+        /**
+         * Team creation set of controls.
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @returns {NewTeamControl}
+         * @constructor
+         * NewTeamControl.container is (jQuery) DIV container for the control. The following event is available:
+         *         'team_created' (first additional argument — name of the team, second additional argument — two-letter code of the language chosen)
+         */
+        function NewTeamControl(interfaceLanguageManager)
+        {
+            /**
+             * Clears user input.
+             */
+            this.clear = function(){
+                inputControl.setValue('');
+                languageControl.selectLanguage(interfaceLanguageManager.getLanguage());
+            };
+
+            /**
+             * Changes control mode to 'button' (and clears input).
+             */
+            this.reduce = function(){
+                if (edit_mode)
+                {
+                    aThis.clear();
+                    edit_mode = false;
+                    container.addClass('c_button');
+                }
+            };
+
+            /**
+             * Changed control mode to 'edit'.
+             */
+            this.expand = function(){
+                if (! edit_mode)
+                {
+                    edit_mode = true;
+                    container.removeClass('c_button');
+                }
+            };
+
+            var aThis = this;
+            var container = $('<div class="newTeamControl"></div>');
+            this.container = container;
+
+            var inputControl = new InputControl(interfaceLanguageManager, 256, 'team_name', '');
+            var languageControl = new LanguageControl(interfaceLanguageManager.getLanguage());
+
+            container.append(
+                    '<div class="c_inner"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><rect x="1" y="1" rx="10" ry="10" width="286" height="80%"></rect></svg></div>' +
+
+                    '<div class="c_cover"></div>' +
+                    '<div class="c_button"><div class="button"><div class="button_cover"></div><span class="c_caption"></span></div></div>' +
+
+                    '<div class="c_edit">' +
+                    '<div class="button disabled">' +
+                    '<div class="button_cover"></div><span class="c_caption"></span>' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><path d="M1,1 L287,1 L287,33 A10,10 0 0,1 277,43 L11,43 A10,10 0 0,1 1,33 Z" /></svg>' +
+                    '</div>' +
+                    '<span class="controlCaption"></span>' +
+                    '</div>'
+            );
+
+            interfaceLanguageManager.manage(container.children('.c_button').find('.c_caption'), 'new_team');
+            interfaceLanguageManager.manage(container.children('.c_edit').children('.button').find('.c_caption'), 'create_team');
+            interfaceLanguageManager.manage(container.children('.c_edit').children('.controlCaption'), 'language');
+
+            container.children('.c_edit').append([inputControl.container, languageControl.container]);
+            container.children('.c_button').find('.button').on('button_activated', function(){
+                container.addClass('c_active');
+            }).on('button_deactivated', function(){
+                container.removeClass('c_active');
+            }).on('click', function(){
+                inputControl.forceChange();
+                if (inputControl.getValue() != '')
+                    aThis.expand();
+            });
+
+            var createButton = container.children('.c_edit').children('.button');
+            createButton.on('click', function(){
+                if (enabled)
+                {
+                    container.trigger('team_created', [inputControl.getValue(), languageControl.getLanguage()]);
+                    aThis.clear();
+                }
+            });
+
+            var enabled = false, edit_mode = true;
+
+            inputControl.container.on('input_value_changed', function(event, value){
+                enabled = (value != '');
+                if (enabled)
+                {
+                    createButton.removeClass('disabled');
+                    container.addClass('c_enabled');
+                }
+                else
+                {
+                    createButton.addClass('disabled');
+                    container.removeClass('c_enabled');
+                }
+            });
+
+            return this;
+        }
+
+        /**
+         * Team list control.
+         * @param {ScreenManager} screenManager
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @returns {TeamListControl}
+         * @constructor
+         * TeamListControl.container is (jQuery) DIV container for the control.
+         */
+        function TeamListControl(screenManager, interfaceLanguageManager)
+        {
+            /**
+             * Returns team currently picked.
+             * @returns {number} 0-based index of the team currently picked (-1 if there are no teams)
+             */
+            this.getIndex = function(){
+                return selected;
+            };
+
+            /**
+             * Picks (and highlights) one of the teams and unpicks previously highlighted.
+             * @param {number} index 0-based index of the team
+             */
+            this.pickTeam = function(index){
+                if (index != selected)
+                {
+                    list1.children('.c_team.c_selected').removeClass('c_selected');
+                    selected = index;
+                    list1.children('.c_team:eq(' + selected + ')').addClass('c_selected');
+                }
+            };
+
+            /**
+             * Moves one of the teams to the bottom of the list and picks the first team from the newly ordered list.
+             * @param {number} index 0-based index of the team
+             */
+            this.lowerTeam = function(index){
+                list1.children('.c_team:eq(' + index + ')').appendTo(list1);
+                selected = -1;
+                aThis.pickTeam(0);
+            };
+
+            /**
+             * Adds team to the top of the list and picks it.
+             * @param {string} name name of the team
+             * @param {boolean} background if true, team will be added without animation
+             * @param {function} callback (optional) function to call after animations are over (no arguments)
+             */
+            this.addTeam = function(name, background, callback){
+                var gradientId = 'teamListControl_' + Math.floor(1000000 * Math.random()) + '_' + Math.floor(1000000 * Math.random()) + '_' + teamsTotal;
+                teamsCounter++;
+                teamsTotal++;
+                container.removeClass('c_empty');
+                list2.html(
+                        '<div class="c_team">' +
+                        '<span class="c_caption">' + name + '</span>' +
+                        '<svg class="c_gradient" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="20px" height="49px"><defs><linearGradient x1="0%" y1="0%" x2="100%" y2="0%" id="' + gradientId + '"><stop offset="0%" style="stop-opacity:0" /><stop offset="100%" style="stop-opacity:1" /></linearGradient></defs><rect x="0" y="0" width="20" height="49" fill="url(#' + gradientId + ')"></rect></svg>' +
+                        '</div>');
+                var newTeam = list2.children('.c_team');
+
+                if (teamsCounter == 1 || background)
+                {
+                    list1.prepend(newTeam);
+                    selected = -1;
+                    aThis.pickTeam(0);
+                    if (callback)
+                        callback();
+                } else
+                {
+                    screenManager.lock();
+                    var animationEvents = 'animationend animationEnd webkitAnimationEnd oanimationend oAnimationEnd msAnimationEnd MSAnimationEnd mozAnimationEnd';
+                    list1.on(animationEvents, function(){
+                        list1.off(animationEvents);
+                        list1.prepend(newTeam);
+                        selected = -1;
+                        aThis.pickTeam(0);
+                        container.removeClass('c_adding');
+                        screenManager.unlock();
+                        if (callback)
+                            callback();
+                    });
+                    container.addClass('c_adding');
+                }
+            };
+
+            /**
+             * Removes all teams from the list and reinitializes counters.
+             */
+            this.clear = function(){
+                container.addClass('c_empty');
+                list1.children('.c_team').remove();
+                selected = -1;
+                teamsCounter = teamsTotal = 0;
+            };
+
+            var container = $('<div class="teamListControl c_empty"></div>');
+            this.container = container;
+            container.append(
+                    '<div class="c_caption"><span class="c_caption"></span></div>' +
+                    '<div class="c_list"><div class="c_first"></div><div class="c_second"></div></div>'
+            );
+            interfaceLanguageManager.manage(container.find('.c_caption .c_caption'), 'pick_team');
+
+            var aThis = this;
+            var selected = -1;
+            var teamsCounter = 0;   // Number of currently added teams
+            var teamsTotal = 0; // Total number of teams ever added
+            var list1 = container.find('.c_list .c_first'), list2 = container.find('.c_list .c_second');
+
+            list1.on('touchstart mousedown', function(event){
+                var position = (event.pageY !== undefined ? event.pageY : event.originalEvent.changedTouches[0].pageY) - $(this).offset().top;
+                var newSelected = Math.min(teamsCounter - 1, Math.floor(position / screenManager.scale / 50));
+                if (newSelected != selected)
+                {
+                    var oldSelected = selected;
+                    aThis.pickTeam(newSelected);
+                    if (event.type == 'touchstart')
+                    {
+                        var onMove = function(){
+                            aThis.pickTeam(oldSelected);
+                            onFinish();
+                        };
+                        var onFinish = function(){
+                            list1.off('touchmove', onMove).off('touchend touchcancel', onFinish);
+                        };
+                        list1.on('touchmove', onMove).on('touchend touchcancel', onFinish);
+                    }
+                }
+            });
+
+            return this;
+        }
+
+        /**
+         * Word guessing control.
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {string} word the word
+         * @returns {WordControl}
+         * @constructor
+         * WordControl.container is (jQuery) DIV container for the control. The following events are available:
+         *         'word_status_changed' (first additional argument — whether the word is now guessed (1), not available for guessing (-1) or neither (0), second additional argument — old status (-1, 0 or 1))
+         *         'word_info_requested' (no additional arguments)
+         */
+        function WordControl(interfaceLanguageManager, word)
+        {
+            /**
+             * Makes information button visible.
+             */
+            this.showInfo = function(){
+                if (infoShown)
+                    return;
+                infoShown = true;
+                container.removeClass('c_noInfo c_undeleted').addClass('c_info');
+            };
+
+            /**
+             * Makes information button invisible.
+             */
+            this.hideInfo = function(){
+                if (! infoShown)
+                    return;
+                infoShown = false;
+                container.removeClass('c_info c_undeleted').addClass('c_noInfo');
+            };
+
+            var infoShown = false;
+
+            var container = $('<div class="wordControl"></div>');
+            this.container = container;
+            container.append(
+                    '<span class="c_word"><span class="c_inner"></span></span>' +
+                    '<div class="c_clear"></div>' +
+
+                    '<div class="c_cover"></div>' +
+
+                    '<div class="button c_guessing"><div class="button_cover"></div>' +
+                    '<svg class="c_unchecked" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px" height="32px" viewBox="0 0 31.68 31.68" enable-background="new 0 0 31.68 31.68" xml:space="preserve"><g><path d="M15.84,0C7.092,0,0,7.092,0,15.84c0,8.748,7.092,15.84,15.84,15.84s15.84-7.092,15.84-15.84 C31.68,7.092,24.588,0,15.84,0z M15.84,29.84c-7.732,0-14-6.268-14-14s6.268-14,14-14s14,6.268,14,14S23.572,29.84,15.84,29.84z"/><polygon points="15.195,19.193 9.937,14.161 8.09,16.548 15.422,23.84 25.36,10.132 23.486,7.667 	"/></g></svg>' +
+                    '<svg class="c_checked" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="32px" height="32px" viewBox="0 0 31.68 31.68" enable-background="new 0 0 31.68 31.68" xml:space="preserve"><path d="M15.84,0C7.092,0,0,7.092,0,15.84c0,8.748,7.092,15.84,15.84,15.84 s15.84-7.092,15.84-15.84C31.68,7.092,24.588,0,15.84,0z M15.422,23.84L8.09,16.548l1.867-2.699l5.258,5.032l8.291-11.525 l1.981,2.601L15.422,23.84z"/></svg>' +
+                    '</div>' +
+
+                    '<div class="button c_deleting c_right"><div class="button_cover"></div>' +
+                    '<svg class="c_delete" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px" viewBox="0 0 15.802 15.802" enable-background="new 0 0 15.802 15.802" xml:space="preserve"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.052,7.901l5.453-5.453c0.396-0.396,0.396-1.038,0-1.434 l-0.717-0.717c-0.396-0.396-1.038-0.396-1.434,0L7.901,5.75L2.448,0.297c-0.396-0.396-1.038-0.396-1.434,0L0.297,1.014 c-0.396,0.396-0.396,1.038,0,1.434L5.75,7.901l-5.453,5.453c-0.396,0.396-0.396,1.038,0,1.434l0.717,0.717 c0.396,0.396,1.038,0.396,1.434,0l5.453-5.453l5.453,5.453c0.396,0.396,1.038,0.396,1.434,0l0.717-0.717 c0.396-0.396,0.396-1.038,0-1.434L10.052,7.901z"/></svg>' +
+                    '<svg class="c_undo" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="17px" height="20px" viewBox="0 0 16.587 20.2" enable-background="new 0 0 16.587 20.2" xml:space="preserve"><path d="M8.667,4.2H4.7l2.579-2.579L5.657,0L1.621,4.036L0,5.657l1.621,1.621l4.036,4.036l1.621-1.621L4.786,7.2h3.39 c0.164,0,0.323-0.024,0.491-0.024c2.761,0,4.999,2.251,4.999,5.012c0,2.761-2.238,5.031-4.999,5.031 c-0.168,0-0.327-0.018-0.491-0.018H4.657v3h4.01c4.374,0,7.92-3.626,7.92-8S13.041,4.2,8.667,4.2z"/></svg>' +
+                    '</div>' +
+
+                    '<div class="button c_deleting c_left"><div class="button_cover"></div>' +
+                    '<svg class="c_undo" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="17px" height="20px" viewBox="0 0 16.587 20.2" enable-background="new 0 0 16.587 20.2" xml:space="preserve"><path d="M8.667,4.2H4.7l2.579-2.579L5.657,0L1.621,4.036L0,5.657l1.621,1.621l4.036,4.036l1.621-1.621L4.786,7.2h3.39 c0.164,0,0.323-0.024,0.491-0.024c2.761,0,4.999,2.251,4.999,5.012c0,2.761-2.238,5.031-4.999,5.031 c-0.168,0-0.327-0.018-0.491-0.018H4.657v3h4.01c4.374,0,7.92-3.626,7.92-8S13.041,4.2,8.667,4.2z"/></svg>' +
+                    '</div>' +
+
+                    '<div class="button c_info"><div class="button_cover"></div>' +
+                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="24px" height="24px" viewBox="0 0 23.76 23.76" enable-background="new 0 0 23.76 23.76" xml:space="preserve"><g><path d="M11.88,0C5.319,0,0,5.319,0,11.88c0,6.561,5.319,11.88,11.88,11.88s11.88-5.319,11.88-11.88 C23.76,5.319,18.441,0,11.88,0z M11.88,21.879c-5.522,0-9.999-4.477-9.999-9.999c0-5.522,4.477-9.999,9.999-9.999 s9.999,4.477,9.999,9.999C21.879,17.402,17.402,21.879,11.88,21.879z"/><path d="M13.779,15.298c0.124,0.201,0.163,0.265,0.285,0.495c-0.463,0.475-1.675,1.586-2.589,1.913 c-1.385,0.487-2.527-0.071-2.298-1.402c0.229-1.331,1.544-4.18,1.731-4.718c0.187-0.539-0.172-0.686-0.557-0.467 c-0.222,0.128-0.552,0.385-0.836,0.635c-0.079-0.158-0.189-0.339-0.272-0.512c0.463-0.464,1.236-1.085,2.151-1.31 c1.094-0.27,2.922,0.162,2.136,2.252c-0.561,1.49-0.958,2.518-1.208,3.284c-0.25,0.766,0.047,0.927,0.484,0.628 C13.148,15.862,13.512,15.544,13.779,15.298z M12.459,6.5c-0.628,0.535-0.715,1.414-0.194,1.963 c0.521,0.549,1.452,0.561,2.081,0.026c0.628-0.535,0.715-1.414,0.194-1.963C14.019,5.977,13.087,5.966,12.459,6.5z"/></g></svg>' +
+                    '</div>'
+            );
+            container.find('.button.c_info').attr('title', interfaceLanguageManager.getString('word_info'));    // WordControls are created dynamically, so interfaceLanguageManager.manage method can not be used
+            container.find('.c_word .c_inner').text(word);
+
+            var status = 0, guessed = false;
+
+            container.find('.button.c_guessing').on('click', function(){
+                var oldStatus = status;
+                if (status == 0)
+                    container.addClass('c_checked');
+                else
+                    container.removeClass('c_checked');
+                status = 1 - status;
+                guessed = ! guessed;
+                container.trigger('word_status_changed', [status, oldStatus]);
+            });
+
+            container.find('.button.c_deleting').on('click', function(){
+                var oldStatus = status;
+                container.removeClass('c_noInfo');  // Removing c_noInfo is for animations purposes
+                if (status >= 0)
+                {
+                    status = -1;
+                    container.removeClass('c_undeleted').addClass('c_deleted');
+                }
+                else
+                {
+                    status = (guessed ? 1 : 0);
+                    container.addClass('c_undeleted').removeClass('c_deleted');
+                }
+                container.trigger('word_status_changed', [status, oldStatus]);
+            });
+
+            container.find('.button.c_info').on('click', function(){
+                container.trigger('word_info_requested');
+            });
+
+            return this;
+        }
+
+        /**
+         * Time helper functions.
+         * @returns {TimeHelper}
+         * @constructor
+         */
+        function TimeHelper()
+        {
+            /**
+             * Converts seconds to string of the m:ss format.
+             * @param {number} seconds
+             * @returns string
+             */
+            this.toMinutes = function(seconds){
+                var s = seconds % 60;
+                return ((seconds - s) / 60) + ':' + (s < 10 ? '0' : '') + s;
+            };
+
+            return this;
+        }
+
+        /**
+         * Timer control.
+         * @returns {Timer}
+         * @constructor
+         * Timer.container is (jQuery) DIV container for the timer. The following event is available:
+         *         'time_elapsed' (no additional arguments)
+         */
+        function Timer()
+        {
+            /**
+             * Starts or restarts timer.
+             * @param {number} newSeconds number of seconds to countdown
+             */
+            this.restart = function(newSeconds){
+                if (running)
+                    stop();
+                cover.addClass('noTransition');
+                container.removeClass('c_elapsed');
+                seconds = newSeconds;
+                timeContainer.html(helper.toMinutes(seconds));
+                start();
+            };
+
+            /**
+             * Pauses the timer.
+             */
+            this.pause = function(){
+                if (running)
+                    stop();
+            };
+
+            /**
+             * Resumes the timer after it was paused.
+             */
+            this.resume = function(){
+                if (! running && seconds > 0)
+                    start();
+            };
+
+            /**
+             * Gives number of seconds till the countdown ends.
+             * @returns {number} seconds
+             */
+            this.getSecondsLeft = function(){
+                return seconds;
+            };
+
+            var helper = new TimeHelper();
+            var container = $('<div class="timer"></div>');
+            this.container = container;
+            container.append(
+                    '<div class="c_border"></div><div class="c_cover"></div>' +
+                    '<span class="c_time"><span class="c_inner">' +
+                    '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="20px" height="20px" viewBox="-0.1 -0.1 19.9 19.9" enable-background="new -0.1 -0.1 19.9 19.9" xml:space="preserve"><g><path d="M9.9,0C4.432,0,0,4.432,0,9.9c0,5.468,4.432,9.9,9.9,9.9s9.9-4.432,9.9-9.9 C19.8,4.432,15.368,0,9.9,0z M9.9,17.899c-4.418,0-7.999-3.581-7.999-7.999S5.482,1.901,9.9,1.901s7.999,3.581,7.999,7.999 S14.318,17.899,9.9,17.899z"/><path d="M10.9,9.486V4.9c0-0.552-0.448-1-1-1s-1,0.448-1,1v5c0,0.13,0.027,0.26,0.077,0.382 c0.051,0.122,0.124,0.233,0.216,0.325l2.828,2.828c0.391,0.391,1.024,0.391,1.414,0c0.391-0.391,0.391-1.024,0-1.414L10.9,9.486z" /></g></svg>' +
+                    '<span class="c_seconds"></span></span></span>'
+            );
+
+            var timeContainer = container.find('.c_seconds'), cover = container.find('.c_cover');
+
+            var aThis = this;
+            var initialTime, initialSeconds, running, interval, seconds;
+
+            var start = function(){
+                initialTime = (new Date()).getTime();
+                initialSeconds = seconds;
+                running = true;
+                interval = setInterval(timerStep, 1000);
+            };
+
+            var stop = function(){
+                clearInterval(interval);
+                running = false;
+            };
+
+            var timerStep = function(){
+                var curTime = (new Date()).getTime();
+                var curSeconds = Math.max(0, initialSeconds - Math.floor((curTime - initialTime) / 1000 + 0.5));
+                if (curSeconds != seconds)
+                {
+                    seconds = curSeconds;
+                    timeContainer.html(helper.toMinutes(seconds));
+                    if (seconds == 0)
+                    {
+                        stop();
+                        cover.removeClass('noTransition');
+                        container.addClass('c_elapsed');
+                        container.trigger('time_elapsed');
+                    }
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Generic screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {object} header null or object containing these fields:
+         *        'caption' (optional) — caption's string resource name; if absent, there will be no caption
+         *        'smallCaption' (optional) — alternative caption in small letters (e.g. team name)
+         *        'left' (optional) — type of element on the left: 'back' (back button) or 'text:[resource_name]' (button with text by given resource name); if absent, there will be no element on the left
+         *        'right' (optional) — type of element on the right: 'settings' (settings button) or 'points:[points]' (points earned by the team, currently [points]); if absent, there will be no element on the right
+         * @param {object} footer null or object containing these fields:
+         *        'buttons' — array of buttons each being object with the following fields:
+         *                  'caption' — caption's string resource name
+         *                  'class' — button's class name(s)
+         *                  'id' — identifier for the click event
+         *         'visible' (optional) — whether the footer is initially visible: true (default) or false
+         * @returns {Screen}
+         * @constructor
+         * Screen.container is (jQuery) DIV container for the screen. The following events are available:
+         *         'header_left_click' (no additional arguments)
+         *         'header_right_click' (no additional arguments)
+         *         'footer_click' (single additional argument — button's ID)
+         * Screen.contentContainer is (jQuery) DIV container for the main content of the screen.
+         * Screen.footerHeight is height (in pixels) of the footer (0 if there is no footer)
+         */
+        function Screen(screenManager, interfaceLanguageManager, header, footer)
+        {
+            /**
+             * Checks whether footer is visible.
+             */
+            this.isFooterVisible = function(){
+                if (! footerContainer)
+                    return null;
+                return footerShown;
+            };
+
+            /**
+             * Makes footer visible.
+             * @param {boolean} showAnimation (optional) whether to show animation of showing (default) or not
+             */
+            this.showFooter = function(showAnimation){
+                if (! footerContainer || footerShown)
+                    return;
+                footerShown = true;
+                var animation = (showAnimation === undefined || showAnimation);
+                if (animation)
+                    footerContainer.removeClass('noTransition');
+                else
+                    footerContainer.addClass('noTransition');
+                footerContainer.css({
+                    'transform': 'translateY(0px) translate3d(0, 0, 0)', // See https://stackoverflow.com/questions/13666688/webkit-transform-scale-making-items-disappear
+                    '-webkit-transform': 'translateY(0px) translate3d(0, 0, 0)'
+                });
+            };
+
+            /**
+             * Makes footer invisible.
+             * @param {boolean} showAnimation (optional) whether to show animation of hiding (default) or not
+             */
+            this.hideFooter = function(showAnimation){
+                if (! footerContainer || ! footerShown)
+                    return;
+                footerShown = false;
+                var animation = (showAnimation === undefined || showAnimation);
+                if (animation)
+                    footerContainer.removeClass('noTransition');
+                else
+                    footerContainer.addClass('noTransition');
+                footerContainer.css({
+                    'transform': 'translateY(' + footerShift + 'px)',    // +1 is a border
+                    '-webkit-transform': 'translateY(' + footerShift + 'px)'
+                });
+            };
+
+            /**
+             * Fixing chrome bug when animated elements would appear over footer; should be called before animation of the screen's content.
+             */
+            this.fixFooterForWebkitAnimation = function(){
+                if (footerContainer)
+                    footerContainer.removeClass('noTransition').addClass('webkit_transition');
+            };
+
+            /**
+             * Should be called after animation of the screen's content.
+             * @see fixFooterForWebkitAnimation
+             */
+            this.unfixFooterForWebkitAnimation = function(){
+                if (footerContainer)
+                    footerContainer.removeClass('webkit_transition');
+            };
+
+            /**
+             * Hides screen behind the background-colored cover and fades it out (while fading screen in).
+             */
+            this.fadeIn = function(){
+                var cover = container.children('.fade');
+                var animationEvents = 'animationend animationEnd webkitAnimationEnd oanimationend oAnimationEnd msAnimationEnd MSAnimationEnd mozAnimationEnd';
+                cover.on(animationEvents, function(){
+                    cover.off(animationEvents);
+                    cover.removeClass('out');
+                });
+                cover.addClass('out');
+            };
+
+            /**
+             * Updates team score.
+             * @param {number} points number of points
+             */
+            this.setPoints = function(points){
+                if (pointsContainer)
+                    pointsContainer.html(points);
+            };
+
+            /**
+             * Sets new caption in small letters; if contains more than 11 characters, ellipsis is being put after 10 characters.
+             * @param {string} smallCaption new caption
+             */
+            this.setSmallCaption = function(smallCaption){
+                if (smallCaption_element)
+                    smallCaption_element.html(stringHelper.ellipsis(smallCaption, 10, 11));
+            };
+            var stringHelper = new StringHelper();
+
+            var container = $('<div class="screen"><div class="fade"></div></div>');
+            this.container = container;
+
+            if (header)
+            {
+                var headerContainer = $('<div class="header"><div class="inner"><div class="left"></div><div class="center"></div><div class="right"></div></div></div>');
+                if (header['caption'] !== undefined)
+                {
+                    var caption_element = $('<span class="caption"></span>');
+                    interfaceLanguageManager.manage(caption_element, header['caption']);
+                    headerContainer.find('.center').append(caption_element);
+                } else if (header['smallCaption'] !== undefined)
+                {
+                    var smallCaption_element = $('<span class="smallCaption"></span>');
+                    headerContainer.find('.center').append(smallCaption_element);
+                    this.setSmallCaption(header['smallCaption']);
+                }
+
+                if (header['left'] !== undefined)
+                {
+                    var leftButton = $('<div class="button"></div>');
+                    if (header['left'] == 'back')
+                    {
+                        leftButton.addClass('back');
+                        leftButton.html('<div class="button_cover"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="11px" height="19px" viewBox="0 0 10.811 18.806" enable-background="new 0 0 10.811 18.806" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.698,9.403l6.83-7.01c0.377-0.387,0.377-1.015,0-1.402L9.845,0.29  c-0.377-0.387-0.989-0.387-1.366,0L0.283,8.702c-0.377,0.387-0.377,1.015,0,1.402l8.197,8.412c0.377,0.387,0.989,0.387,1.366,0  l0.683-0.701c0.377-0.387,0.377-1.015,0-1.402L3.698,9.403z"/></svg>');
+                        interfaceLanguageManager.manage(leftButton, 'back', 'title');
+                    } else if (header['left'].match(/^text:/))
+                    {
+                        leftButton.addClass('text');
+                        leftButton.html('<div class="button_cover"></div><div class="button_container"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><rect x="1" y="8" rx="6" ry="6" width="50%" height="30"></rect></svg>'
+                                + '<span></span></div>');
+                        interfaceLanguageManager.manage(leftButton.children('.button_container').children('span'), header['left'].substr('text:'.length));
+                    }
+
+                    leftButton.on('click', function(){
+                        container.trigger('header_left_click');
+                    });
+                    headerContainer.find('.left').append(leftButton);
+                }
+                if (header['right'] !== undefined)
+                {
+                    var rightButton = $('<div class="button"></div>');
+
+                    if (header['right'] == 'settings')
+                    {
+                        rightButton.addClass('settings');
+                        rightButton.html('<div class="button_cover"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="26px" height="26px" viewBox="0 0 25.993 25.997" enable-background="new 0 0 25.993 25.997" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><path fill="none" stroke-width="2" stroke-miterlimit="10" d="M22.518,11.144  c-0.41-0.059-0.846-0.428-0.973-0.82l-0.609-1.481c-0.191-0.365-0.146-0.935,0.1-1.264l0.99-1.318  c0.246-0.33,0.227-0.854-0.047-1.162l-1.084-1.086c-0.309-0.272-0.832-0.293-1.164-0.045l-1.316,0.988  c-0.33,0.248-0.898,0.293-1.264,0.101l-1.48-0.609c-0.395-0.126-0.764-0.562-0.82-0.971l-0.234-1.629  c-0.057-0.409-0.441-0.778-0.85-0.822c0,0-0.255-0.026-0.77-0.026c-0.514,0-0.769,0.026-0.769,0.026  c-0.41,0.044-0.794,0.413-0.852,0.822l-0.233,1.629c-0.058,0.409-0.427,0.845-0.82,0.971l-1.48,0.609  C8.477,5.248,7.909,5.204,7.579,4.956L6.261,3.967c-0.33-0.248-0.854-0.228-1.163,0.045L4.014,5.098  C3.742,5.407,3.72,5.93,3.968,6.26l0.988,1.318c0.249,0.33,0.293,0.899,0.102,1.264l-0.611,1.482  c-0.125,0.393-0.562,0.762-0.971,0.82l-1.629,0.231c-0.408,0.059-0.777,0.442-0.82,0.853c0,0-0.027,0.255-0.027,0.77  s0.027,0.77,0.027,0.77c0.043,0.411,0.412,0.793,0.82,0.852l1.629,0.232c0.408,0.059,0.846,0.428,0.971,0.82l0.611,1.48  c0.191,0.365,0.146,0.936-0.102,1.264l-0.988,1.318c-0.248,0.33-0.308,0.779-0.132,0.994c0.175,0.217,0.677,0.752,0.678,0.754  s0.171,0.156,0.375,0.344c0.204,0.188,1.042,0.449,1.372,0.203l1.317-0.99c0.33-0.246,0.898-0.293,1.264-0.1l1.48,0.609  c0.394,0.125,0.763,0.562,0.82,0.971l0.233,1.629c0.058,0.408,0.441,0.779,0.852,0.822c0,0,0.255,0.027,0.769,0.027  c0.515,0,0.77-0.027,0.77-0.027c0.409-0.043,0.793-0.414,0.85-0.822l0.234-1.629c0.057-0.408,0.426-0.846,0.82-0.971l1.48-0.611  c0.365-0.191,0.934-0.146,1.264,0.102l1.318,0.99c0.332,0.246,0.854,0.227,1.164-0.047l1.082-1.084  c0.273-0.311,0.293-0.834,0.047-1.164l-0.99-1.318c-0.246-0.328-0.291-0.898-0.1-1.264l0.609-1.48  c0.127-0.393,0.562-0.762,0.973-0.82l1.627-0.232c0.41-0.059,0.779-0.441,0.822-0.852c0,0,0.027-0.255,0.027-0.77  s-0.027-0.77-0.027-0.77c-0.043-0.41-0.412-0.794-0.822-0.853L22.518,11.144z M12.997,15.998c-1.657,0-3-1.344-3-3  c0-1.657,1.343-3,3-3s3,1.344,3,3S14.653,15.998,12.997,15.998z"/></svg>');
+                        interfaceLanguageManager.manage(rightButton, 'settings_button', 'title');
+                    } else if (header['right'].match(/^points:/))
+                    {
+                        rightButton.addClass('points');
+                        rightButton.html('<div class="button_cover"></div><span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="10px" height="10px" viewBox="0 0 10 10" enable-background="new 0 0 10 10" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><polygon points="5,0 6.528,3.316 10,3.82 7.473,6.373 8.09,10 5,8.262 1.91,10 2.527,6.373 0,3.82 3.471,3.316"/></svg>'
+                            + '<span class="number">' + header['right'].substr('points:'.length) + '</span></span>');
+                    }
+                    var pointsContainer = rightButton.find('span.number');
+
+                    rightButton.on('click', function(){
+                        container.trigger('header_right_click');
+                    });
+                    headerContainer.find('.right').append(rightButton);
+                }
+                container.append(headerContainer);
+            }
+
+            if (footer)
+            {
+                var footerContainer = $('<div class="footer"><div class="border"></div><div class="inner"></div></div>');
+                var footerHeight = 12 + 56 * footer['buttons'].length;
+                this.footerHeight = footerHeight;
+                var footerShift = footerHeight + 2; // +1 is a border, another +1 is to avoid possible scaling-related misadjustment
+                footerContainer.css('height', footerHeight + 'px');
+                var footerButtons = [];
+                for (var i = 0; i < footer['buttons'].length; i++)
+                {
+                    var footerButton = $('<div class="button"><div class="button_cover"></div><span></span></div>');
+                    interfaceLanguageManager.manage(footerButton.children('span'), footer['buttons'][i]['caption']);
+                    footerButton.addClass(footer['buttons'][i]['class']);
+                    footerButton.on('click', (function(id){return function(){
+                        container.trigger('footer_click', [id]);
+                    };})(footer['buttons'][i]['id']));
+                    footerButton.css('top', (12 + 56 * i) + 'px');
+                    footerButtons.push(footerButton);
+                }
+                footerContainer.children('.inner').append(footerButtons);
+                var footerShown = ! (footer['visible'] === false);
+                footerContainer.addClass('noTransition');   // JIC
+                footerContainer.css({
+                    'transform': 'translateY(' + (footerShown ? '0' : footerShift) + 'px)', // Initial 0px value is essential because of a possible small difference between 'transform: translateY(0px)' and no-style-at-all appearances
+                    '-webkit-transform': 'translateY(' + (footerShown ? '0' : footerShift) + 'px)'
+                });
+                footerContainer.removeClass('noTransition');
+                container.append(footerContainer);
+            } else
+                this.footerHeight = 0;
+
+            {   // Body of the screen
+                var contentContainer = $('<div class="content"></div>');
+                this.contentContainer = contentContainer;
+                container.append(contentContainer);
+            }
+
+            screenManager.storeScreen(this);
+            return this;
+        }
+
+        /**
+         * Start screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @returns {StartScreen}
+         * @constructor
+         * @see Screen class
+         * StartScreen.container provides the following additional events:
+         *         'start_button_click' (no additional arguments)
+         *         'rules_button_click' (no additional arguments)
+         *         'settings_button_click' (no additional arguments)
+         */
+        function StartScreen(screenManager, interfaceLanguageManager)
+        {
+            Screen.call(this, screenManager, interfaceLanguageManager, null, null);
+            this.contentContainer.addClass('startScreen');
+            this.contentContainer.append('<div class="c0"><div class="c1">' +
+                    '<div class="cs_top"></div>' +
+                    '<div class="c_logo"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="158px" height="88px" viewBox="0 0 158 88" enable-background="new 0 0 158 88" xml:space="preserve"><path d="M36.29,21.434l4.786-14.536h0.114c-0.102,2.336-0.159,3.775-0.171,4.316C41.006,11.756,41,12.234,41,12.649v8.785h3.669	V2.873h-5.357l-4.659,14.193h-0.076L30.184,2.873h-5.358v18.56h3.517v-8.633c0-0.99-0.081-2.966-0.241-5.929h0.114l4.469,14.561	H36.29z"/><path d="M60.754,21.434v-9.458c0-1.693-0.508-2.954-1.523-3.783c-1.016-0.829-2.476-1.244-4.38-1.244	c-1.989,0-3.8,0.427-5.434,1.282l1.282,2.615c1.532-0.686,2.865-1.028,3.999-1.028c1.473,0,2.209,0.719,2.209,2.158v0.622	l-2.463,0.076c-2.124,0.076-3.713,0.472-4.767,1.187c-1.054,0.715-1.581,1.826-1.581,3.332c0,1.439,0.391,2.548,1.174,3.326	c0.783,0.779,1.855,1.168,3.218,1.168c1.109,0,2.008-0.159,2.698-0.476c0.69-0.317,1.36-0.887,2.012-1.708h0.102l0.749,1.93H60.754z	 M56.907,16.025c0,0.855-0.269,1.54-0.806,2.057c-0.537,0.516-1.255,0.774-2.152,0.774c-1.253,0-1.879-0.546-1.879-1.638	c0-0.762,0.275-1.329,0.825-1.701c0.55-0.372,1.388-0.576,2.514-0.609l1.498-0.051V16.025z"/><path d="M72.142,7.24c-0.152-0.034-0.502-0.087-1.047-0.159c-0.546-0.072-1.018-0.108-1.416-0.108c-1.871,0-3.309,0.423-4.316,1.27	c-1.007,0.846-1.511,2.044-1.511,3.593c0,0.965,0.218,1.803,0.654,2.514c0.436,0.711,1.026,1.227,1.771,1.549	c-0.592,0.347-1.045,0.7-1.358,1.06c-0.313,0.36-0.47,0.81-0.47,1.352c0,0.432,0.148,0.84,0.444,1.225	c0.296,0.385,0.643,0.662,1.041,0.831c-1.033,0.246-1.815,0.656-2.349,1.232c-0.533,0.575-0.8,1.291-0.8,2.146	c0,1.244,0.522,2.211,1.568,2.901c1.045,0.69,2.558,1.035,4.539,1.035c2.59,0,4.577-0.457,5.96-1.371	c1.384-0.914,2.076-2.201,2.076-3.859c0-1.295-0.408-2.277-1.225-2.945c-0.817-0.669-2.004-1.003-3.561-1.003h-2.412	c-1.422,0-2.133-0.279-2.133-0.838c0-0.372,0.199-0.711,0.597-1.016l0.571,0.064l0.698,0.038c1.887,0,3.362-0.425,4.424-1.276	c1.062-0.851,1.593-2.038,1.593-3.561c0-0.787-0.203-1.498-0.609-2.133l2.222-0.571V7.24H72.142z M66.854,22.113	c0.478-0.334,1.073-0.501,1.784-0.501h2.006c0.973,0,1.693,0.101,2.158,0.305c0.465,0.203,0.698,0.571,0.698,1.104	c0,0.66-0.394,1.181-1.181,1.562c-0.787,0.381-1.875,0.571-3.263,0.571c-0.923,0-1.64-0.152-2.152-0.457	c-0.512-0.305-0.768-0.724-0.768-1.257C66.137,22.889,66.376,22.447,66.854,22.113z M69.679,9.322c1.405,0,2.107,0.855,2.107,2.564	c0,0.77-0.169,1.38-0.508,1.828c-0.339,0.449-0.872,0.673-1.6,0.673c-0.719,0-1.255-0.224-1.606-0.673	c-0.351-0.448-0.527-1.058-0.527-1.828C67.546,10.177,68.257,9.322,69.679,9.322L69.679,9.322z"/><path d="M90.118,20.812c0.821-0.584,1.454-1.435,1.898-2.552c0.444-1.117,0.667-2.433,0.667-3.948c0-2.302-0.474-4.1-1.422-5.395	c-0.948-1.295-2.26-1.942-3.936-1.942c-1.777,0-3.119,0.703-4.024,2.107h-0.178L82.577,7.24h-3.148V27.68h3.872v-5.751	c0-0.186-0.068-0.872-0.203-2.057h0.203c0.948,1.21,2.255,1.815,3.923,1.815C88.332,21.688,89.297,21.396,90.118,20.812z	 M88.093,11.119c0.427,0.698,0.641,1.746,0.641,3.142c0,2.861-0.868,4.291-2.603,4.291c-0.982,0-1.699-0.33-2.152-0.99	c-0.453-0.66-0.679-1.752-0.679-3.275v-0.419c0.017-1.354,0.245-2.325,0.686-2.914c0.44-0.588,1.138-0.882,2.095-0.882	C86.995,10.071,87.666,10.42,88.093,11.119z"/><path d="M97.824,5.476c0.702,0,1.229-0.167,1.581-0.502c0.351-0.334,0.527-0.802,0.527-1.403c0-1.261-0.703-1.892-2.107-1.892	c-1.405,0-2.107,0.631-2.107,1.892C95.717,4.841,96.419,5.476,97.824,5.476L97.824,5.476z M99.754,7.24h-3.872v14.193h3.872V7.24z"	/><path d="M111.649,10.509c0.482,0.521,0.732,1.259,0.749,2.215h-5.434c0.068-0.956,0.334-1.695,0.8-2.215	c0.465-0.521,1.109-0.781,1.93-0.781C110.515,9.729,111.167,9.989,111.649,10.509z M113.059,21.44	c0.77-0.165,1.494-0.417,2.171-0.755v-2.996c-0.83,0.389-1.625,0.673-2.387,0.851c-0.762,0.178-1.57,0.267-2.425,0.267	c-1.1,0-1.955-0.309-2.564-0.927c-0.609-0.618-0.935-1.477-0.978-2.577h9.153v-1.879c0-2.014-0.559-3.593-1.676-4.735	c-1.117-1.143-2.679-1.714-4.685-1.714c-2.099,0-3.743,0.65-4.932,1.949c-1.189,1.299-1.784,3.138-1.784,5.516	c0,2.311,0.643,4.096,1.93,5.357c1.286,1.261,3.072,1.892,5.357,1.892C111.349,21.688,112.288,21.605,113.059,21.44z"/><path d="M41.195,86.434l-14.67-41.574H15.792L1.179,86.434h9.459l3.002-9.855h15.095l3.002,9.855H41.195z M15.849,69.215	c2.945-9.534,4.729-15.51,5.353-17.927c0.151,0.68,0.401,1.605,0.75,2.775c0.349,1.171,1.912,6.221,4.687,15.151H15.849z"/><path d="M54.364,42.367h-8.638v44.066h8.638V42.367z"/><path d="M67.76,50.835c1.567,0,2.742-0.373,3.526-1.119c0.783-0.746,1.175-1.789,1.175-3.129c0-2.813-1.567-4.22-4.701-4.22	c-3.134,0-4.701,1.407-4.701,4.22C63.059,49.419,64.625,50.835,67.76,50.835L67.76,50.835z M72.064,54.771h-8.638v31.662h8.638	V54.771z"/><path d="M107.267,86.434V65.335c0-3.776-1.133-6.589-3.399-8.439c-2.266-1.85-5.522-2.775-9.771-2.775	c-4.437,0-8.477,0.953-12.121,2.86l2.86,5.834c3.417-1.529,6.391-2.294,8.921-2.294c3.285,0,4.928,1.605,4.928,4.814v1.388	l-5.494,0.17c-4.739,0.17-8.284,1.053-10.634,2.648c-2.351,1.596-3.526,4.074-3.526,7.434c0,3.21,0.873,5.683,2.62,7.42	C83.397,86.132,85.79,87,88.83,87c2.473,0,4.479-0.354,6.018-1.062c1.539-0.708,3.035-1.978,4.489-3.809h0.227l1.671,4.305H107.267z	 M98.685,74.369c0,1.907-0.6,3.437-1.798,4.588c-1.199,1.152-2.799,1.728-4.8,1.728c-2.794,0-4.191-1.218-4.191-3.653	c0-1.699,0.613-2.964,1.841-3.795c1.227-0.831,3.096-1.284,5.607-1.359l3.342-0.113V74.369z"/><path d="M155.118,11.023c1.797-3.09,2.762-5.056,2.871-6.226c0.092-0.99-0.392-1.41-0.682-1.435	c-0.081-0.007-0.148,0.017-0.182,0.067c-0.524,0.773-4.148,8.105-7.826,14.982c-1.943,3.634-3.757,7.169-5.457,9.478	c-0.69,0.938-2.378,4.421-3.26,4.737c-2.066,0.741-4.11,1.442-5.575,2.1c-1.978,0.889-3.345,1.537-5.807,1.429	c-0.094-0.004-0.195-0.01-0.301-0.02c-0.888-0.078-2.138-0.366-2.801-1.277c-1.114-1.531-3.663-1.898-4.448-2.054	c-0.258-0.052-0.588-0.116-0.962-0.149c-0.721-0.064-1.605-0.012-2.447,0.469c-1.005,0.573-1.395,1.792-2.265,1.978	c-0.87,0.186-2.975-0.022-3.93,1.119c0.061,0.67,2.288,0.917,3.681,1.138c1.392,0.222,1.604,1.322,2.022,2.19	c1.178,2.444,3.945,7.675,8.729,9.704c1.309,0.555,2.756,0.886,4.211,1.015c0.429,0.038,0.858,0.058,1.285,0.062	c0.133,0.617,0.289,1.455,0.195,1.936c-0.334,0.271-2.224,1.418-3.212,2.013c-0.722-0.061-1.448-0.101-2.178-0.101	c-4.003,0-7.094,0.77-9.275,2.308c-2.181,1.539-3.271,3.715-3.271,6.528c0,1.643,0.259,3.026,0.779,4.149	c0.519,1.123,1.35,2.12,2.492,2.988c1.142,0.869,2.931,1.813,5.367,2.832c1.699,0.718,3.059,1.345,4.078,1.883	c1.019,0.538,1.737,1.019,2.152,1.444c0.415,0.425,0.623,0.977,0.623,1.657c0,1.813-1.567,2.719-4.701,2.719	c-1.529,0-3.299-0.255-5.31-0.765c-2.011-0.51-3.819-1.142-5.423-1.898v7.137c1.416,0.604,2.936,1.062,4.56,1.374	c1.623,0.312,3.587,0.467,5.891,0.467c4.493,0,7.868-0.85,10.125-2.549c2.256-1.699,3.384-4.172,3.384-7.42	c0-1.567-0.274-2.917-0.821-4.05c-0.548-1.133-1.397-2.133-2.549-3.002c-1.152-0.868-2.964-1.803-5.438-2.804	c-2.775-1.114-4.574-1.954-5.395-2.521s-1.232-1.236-1.232-2.011c0-1.378,1.274-2.067,3.823-2.067c1.435,0,2.841,0.217,4.22,0.651	c1.378,0.435,2.86,0.991,4.446,1.671l2.605-6.23c-1.252-0.577-2.518-1.047-3.795-1.423l3.123-3.285c0,0,0.05,0.011,0.124,0.017	c0.197,0.017,0.567,0.007,0.661-0.298c0.379-1.232-0.379-2.091-0.644-2.345c1.105-0.478,2.016-1.118,2.608-1.906	c1.33-1.77,0.955-4.483,0.866-4.967c0.271-0.469,0.984-0.176,1.242-0.678c0.286-0.557,0.365-2.658,0.411-3.346	c0.324-0.694,3.729-1.148,3.316-2.23c-0.269-0.705-0.878-0.954-1.53-1.012c-0.137-0.012-0.276-0.016-0.414-0.013	c-0.077,0.001-0.152-0.001-0.223-0.007c-0.563-0.05-0.888-0.34-0.551-0.893c1.4-2.3,4.408-6.604,7.086-11.567	c2.276-4.219,5.115-8.086,5.43-10.663C155.702,11.363,155.407,11.203,155.118,11.023z M119.5,36.2c-0.387,0-0.7-0.313-0.7-0.7	s0.313-0.7,0.7-0.7s0.7,0.313,0.7,0.7S119.887,36.2,119.5,36.2z M133.564,55.089c-1.192-0.324-2.395-0.56-3.609-0.71l2.927-1.665	c0,0,0.165,0.082,0.362,0.1c0.158,0.014,0.337-0.013,0.469-0.157c1.001-1.086,0.337-2.085,0.059-2.415	c0.668-0.072,1.317-0.188,1.933-0.344c0.293,0.554,0.669,1.319,0.71,1.811c-0.338,0.479-2.865,3.37-2.865,3.37L133.564,55.089z"/></svg></div>' +
+                    '<div class="cs_logo_buttons"></div>' +
+                    '<div class="c_button c_start"><div class="button"><div class="button_cover"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><rect x="1" y="1" rx="6" ry="6" width="234" height="42"></rect></svg><span></span></div></div>' +
+                    '<div class="cs_buttons"></div>' +
+                    '<div class="c_button c_rules"><div class="button"><div class="button_cover"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><rect x="1" y="1" rx="6" ry="6" width="234" height="42"></rect></svg><span></span></div></div>' +
+                    '<div class="cs_buttons_settings"></div>' +
+                    '<div class="c_settings"><div class="button"><div class="button_cover"></div><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="26px" height="26px" viewBox="0 0 25.993 25.997" enable-background="new 0 0 25.993 25.997" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace"><path fill="none" stroke-width="2" stroke-miterlimit="10" d="M22.518,11.144  c-0.41-0.059-0.846-0.428-0.973-0.82l-0.609-1.481c-0.191-0.365-0.146-0.935,0.1-1.264l0.99-1.318  c0.246-0.33,0.227-0.854-0.047-1.162l-1.084-1.086c-0.309-0.272-0.832-0.293-1.164-0.045l-1.316,0.988  c-0.33,0.248-0.898,0.293-1.264,0.101l-1.48-0.609c-0.395-0.126-0.764-0.562-0.82-0.971l-0.234-1.629  c-0.057-0.409-0.441-0.778-0.85-0.822c0,0-0.255-0.026-0.77-0.026c-0.514,0-0.769,0.026-0.769,0.026  c-0.41,0.044-0.794,0.413-0.852,0.822l-0.233,1.629c-0.058,0.409-0.427,0.845-0.82,0.971l-1.48,0.609  C8.477,5.248,7.909,5.204,7.579,4.956L6.261,3.967c-0.33-0.248-0.854-0.228-1.163,0.045L4.014,5.098  C3.742,5.407,3.72,5.93,3.968,6.26l0.988,1.318c0.249,0.33,0.293,0.899,0.102,1.264l-0.611,1.482  c-0.125,0.393-0.562,0.762-0.971,0.82l-1.629,0.231c-0.408,0.059-0.777,0.442-0.82,0.853c0,0-0.027,0.255-0.027,0.77  s0.027,0.77,0.027,0.77c0.043,0.411,0.412,0.793,0.82,0.852l1.629,0.232c0.408,0.059,0.846,0.428,0.971,0.82l0.611,1.48  c0.191,0.365,0.146,0.936-0.102,1.264l-0.988,1.318c-0.248,0.33-0.308,0.779-0.132,0.994c0.175,0.217,0.677,0.752,0.678,0.754  s0.171,0.156,0.375,0.344c0.204,0.188,1.042,0.449,1.372,0.203l1.317-0.99c0.33-0.246,0.898-0.293,1.264-0.1l1.48,0.609  c0.394,0.125,0.763,0.562,0.82,0.971l0.233,1.629c0.058,0.408,0.441,0.779,0.852,0.822c0,0,0.255,0.027,0.769,0.027  c0.515,0,0.77-0.027,0.77-0.027c0.409-0.043,0.793-0.414,0.85-0.822l0.234-1.629c0.057-0.408,0.426-0.846,0.82-0.971l1.48-0.611  c0.365-0.191,0.934-0.146,1.264,0.102l1.318,0.99c0.332,0.246,0.854,0.227,1.164-0.047l1.082-1.084  c0.273-0.311,0.293-0.834,0.047-1.164l-0.99-1.318c-0.246-0.328-0.291-0.898-0.1-1.264l0.609-1.48  c0.127-0.393,0.562-0.762,0.973-0.82l1.627-0.232c0.41-0.059,0.779-0.441,0.822-0.852c0,0,0.027-0.255,0.027-0.77  s-0.027-0.77-0.027-0.77c-0.043-0.41-0.412-0.794-0.822-0.853L22.518,11.144z M12.997,15.998c-1.657,0-3-1.344-3-3  c0-1.657,1.343-3,3-3s3,1.344,3,3S14.653,15.998,12.997,15.998z"/></svg></div></div>' +
+                    '</div></div>');
+            interfaceLanguageManager.manage(this.contentContainer.find('.c_button.c_start .button > span'), 'start');
+            interfaceLanguageManager.manage(this.contentContainer.find('.c_button.c_rules .button > span'), 'rules_button');
+            interfaceLanguageManager.manage(this.contentContainer.find('.c_settings .button'), 'settings_button', 'title');
+            var container = this.container;
+            this.contentContainer.on('click', '.button', function(){
+                var indicator = $(this).closest('.c_start, .c_rules, .c_settings');
+                var eventType = (indicator.hasClass('c_start') ? 'start_button_click' : (indicator.hasClass('c_rules') ? 'rules_button_click' : 'settings_button_click'));
+                container.trigger(eventType);
+            });
+            return this;
+        }
+
+        /**
+         * Rules screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @returns {RulesScreen}
+         * @constructor
+         * @see Screen class
+         */
+        function RulesScreen(screenManager, interfaceLanguageManager)
+        {
+            Screen.call(this, screenManager, interfaceLanguageManager, {'caption': 'rules_screen', 'left': 'back'}, null);
+            this.contentContainer.addClass('rulesScreen');
+            var rulesContainer = $('<div class="c_rules"></div>');
+            interfaceLanguageManager.manage(rulesContainer, 'rules_text');
+            this.contentContainer.append(rulesContainer);
+            return this;
+        }
+
+        /**
+         * Settings screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {SettingsManager} settingsManager
+         * @returns {SettingsScreen}
+         * @constructor
+         * @see Screen class
+         */
+        function SettingsScreen(screenManager, interfaceLanguageManager, settingsManager)
+        {
+            Screen.call(this, screenManager, interfaceLanguageManager, {'caption': 'settings_screen', 'left': 'back'}, null);
+            this.contentContainer.addClass('settingsScreen');
+            var inner = $('<div class="c_inner1"><div class="c_inner2">' +
+                    '<span class="controlCaption c_language"></span>' +
+                    '<span class="controlCaption c_words"><span class="c_caption"></span><span class="c_value"></span></span>' +
+                    '<span class="controlCaption c_time"><span class="c_caption"></span><span class="c_value"></span></span>' +
+                    '<div class="c_control c_language"></div>' +
+                    '<div class="c_control c_words"></div>' +
+                    '<div class="c_control c_time"></div>' +
+                    '</div></div>');
+            var timeHelper = new TimeHelper();
+            interfaceLanguageManager.manage(inner.find('.controlCaption.c_language'), 'language_main');
+            var languageControl = new LanguageControl(settingsManager.getValue('language'));
+            interfaceLanguageManager.manage(inner.find('.controlCaption.c_words > .c_caption'), 'round_words');
+            var wordsValues = settingsManager.getAllowedValues('words');
+            var words = settingsManager.getValue('words');
+            var wordsSlider = new SliderControl(screenManager, wordsValues.length, wordsValues.indexOf(words));
+            var wordsContainer = inner.find('.controlCaption.c_words > .c_value');
+            wordsContainer.html(words);
+            interfaceLanguageManager.manage(inner.find('.controlCaption.c_time > .c_caption'), 'round_time');
+            var timeValues = settingsManager.getAllowedValues('time');
+            var time = settingsManager.getValue('time');
+            var timeSlider = new SliderControl(screenManager, timeValues.length, timeValues.indexOf(time));
+            var timeContainer = inner.find('.controlCaption.c_time > .c_value');
+            timeContainer.html(timeHelper.toMinutes(time));
+            inner.find('.c_inner2 > .c_control.c_language').append(languageControl.container);
+            inner.find('.c_inner2 > .c_control.c_words').append(wordsSlider.container);
+            inner.find('.c_inner2 > .c_control.c_time').append(timeSlider.container);
+
+            languageControl.container.on('selected_language_changed', function(event, language){
+                settingsManager.setValue('language', language);
+                interfaceLanguageManager.setLanguage(language);
+            });
+
+            wordsSlider.container.on('slider_position_changed', function(event, position){
+                settingsManager.setValue('words', wordsValues[position]);
+                wordsContainer.html(wordsValues[position]);
+            });
+
+            timeSlider.container.on('slider_position_changed', function(event, position){
+                settingsManager.setValue('time', timeValues[position]);
+                timeContainer.html(timeHelper.toMinutes(timeValues[position]));
+            });
+
+            this.contentContainer.append(inner);
+            return this;
+        }
+
+        /**
+         * Teams screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {TeamManager} teamManager
+         * @returns {TeamsScreen}
+         * @constructor
+         * @see Screen class
+         * TeamsScreen.container provides the following additional event:
+         *         'start_button_click' (single additional argument — index of the team user picked)
+         */
+        function TeamsScreen(screenManager, interfaceLanguageManager, teamManager)
+        {
+            /**
+             * Reinitializes the window.
+             * @param {boolean} full whether to do full reset (true; for new game or to restore the old one) or not (false; for new round)
+             */
+            this.reset = function(full){
+                if (! full && ! needsReset)
+                    return;
+                needsReset = false;
+                newTeam.reduce();
+                if (full)
+                {
+                    teamList.clear();
+                    var teams = teamManager.getTeams();
+                    for (var i = teams.length - 1; i >= 0; i--)
+                        teamList.addTeam(teams[i][0], true);
+                    if (teams.length == 0)
+                        aThis.hideFooter(false);
+                    else
+                        aThis.showFooter(false);
+                } else
+                {
+                    var index = teamList.getIndex();
+                    teamManager.lowerTeam(index);
+                    teamList.lowerTeam(index);
+                }
+            };
+
+            var needsReset = true;
+            var aThis = this;
+
+            Screen.call(this, screenManager, interfaceLanguageManager, {'caption': 'teams_screen', 'left': 'back'}, {'buttons': [{'caption': 'start_round', 'class': 'green bold', 'id': 'start'}], 'visible': false});
+            this.contentContainer.addClass('teamsScreen');
+            var inner = $('<div class="inner"></div>');
+
+            var newTeam = new NewTeamControl(interfaceLanguageManager);
+            inner.append(newTeam.container);
+            var teamList = new TeamListControl(screenManager, interfaceLanguageManager);
+            inner.append(teamList.container);
+            inner.append('<div class="c_footer" style="height: ' + this.footerHeight + 'px"></div>');
+
+            newTeam.container.on('team_created', function(event, name, language){
+                teamManager.addTeam(name, language);
+                aThis.fixFooterForWebkitAnimation();
+                teamList.addTeam(name, false, function(){
+                    aThis.unfixFooterForWebkitAnimation();
+                    aThis.showFooter();
+                });
+            });
+
+            this.container.on('footer_click', function(event, id){
+                needsReset = true;
+                aThis.container.trigger('start_button_click', [teamList.getIndex()]);
+            });
+
+            this.contentContainer.append(inner);
+            return this;
+        }
+
+        /**
+         * Words screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {Settings} settingsManager
+         * @param {TeamManager} teamManager
+         * @param {WordManager} wordManager
+         * @returns {WordsScreen}
+         * @constructor
+         * @see Screen class
+         * WordsScreen.container provides the following additional event:
+         *         'screen_close' (no additional arguments)
+         */
+        function WordsScreen(screenManager, interfaceLanguageManager, settingsManager, teamManager, wordManager)
+        {
+            /**
+             * Reinitializes the window.
+             * @param {number} newTeamIndex
+             */
+            this.reset = function(newTeamIndex){
+                teamIndex = newTeamIndex;
+                aThis.hideFooter(false);
+                team = teamManager.getTeams()[teamIndex];
+                teamName = team[0];
+                teamLanguage = team[1];
+                teamPoints = team[2];
+                earnedPoints = lostPoints = lastSum = 0;
+                aThis.setSmallCaption(teamName);
+                aThis.setPoints(teamPoints);
+                timer.restart(settingsManager.getValue('time'));
+                wordsContainer.empty();
+                wordsCount = settingsManager.getValue('words');
+                words = [];
+                for (var i = 0; i < wordsCount; i++)
+                {
+                    words.push(new WordControl(interfaceLanguageManager, wordManager.getWord(teamLanguage)));
+                    wordsContainer.append(words[i].container);
+                    words[i].container.on('word_status_changed', function(event, newStatus, oldStatus){
+                        if (newStatus == 1)
+                            earnedPoints++;
+                        if (oldStatus == 1)
+                            earnedPoints--;
+                        if (newStatus == -1)
+                            lostPoints++;
+                        if (oldStatus == -1)
+                            lostPoints--;
+                        aThis.setPoints(teamPoints + earnedPoints);
+                        var newSum = earnedPoints + lostPoints;
+                        if (timer.getSecondsLeft() > 0)
+                        {
+                            if (lastSum < wordsCount && newSum == wordsCount)
+                                finalizeRound();
+                            if (lastSum == wordsCount && newSum < wordsCount)
+                                unfinalizeRound();
+                        }
+                        lastSum = newSum;
+                    }).on('word_info_requested', function(){
+                        var link = '', word = $(this).text().replace(/­/g, '');
+                        switch (teamLanguage)
+                        {
+                            case 'en':
+                                link = 'https://en.wiktionary.org/wiki/' + word.replace(/ /g, '_');
+                                break;
+                            case 'ru':
+                                link = 'http://gramota.ru/slovari/dic/?bts=x&word=' + encodeURIComponent(word);
+                                break;
+                            case 'uk':
+                                link = 'https://goroh.pp.ua/%D0%A2%D0%BB%D1%83%D0%BC%D0%B0%D1%87%D0%B5%D0%BD%D0%BD%D1%8F/' + encodeURIComponent(word);
+                                break;
+                        }
+                        window.open(link, '_system');
+                    });
+                }
+            };
+
+            var aThis = this;
+            var team, teamIndex, teamName, teamPoints, teamLanguage, earnedPoints, lostPoints, lastSum;
+            var wordsCount, words;
+            var timer = new Timer();
+
+            Screen.call(this, screenManager, interfaceLanguageManager, {'smallCaption': '', 'left': 'text:stop', 'right': 'points:'}, {'buttons': [{'caption': 'results_button', 'class': 'green bold', 'id': 'results'}], 'visible': false});
+            this.contentContainer.addClass('wordsScreen');
+            this.contentContainer.append(timer.container);
+            this.contentContainer.append('<div class="c_words"></div>');
+
+            var tmp_resources = $('<span class="c_resources"></span>');
+            tmp_resources.append('<span class="cr_tmp_stop_round_0"></span><span class="cr_tmp_stop_round"></span>');
+            this.contentContainer.append(tmp_resources);
+            tmp_resources.children('span').each(function(){
+                interfaceLanguageManager.manage($(this), this.className.substr('cr_'.length));
+            });
+
+            var wordsContainer = this.contentContainer.find('.c_words');
+
+            var showFooterDelayed = function(){
+                setTimeout(function(){
+                    if (timer.getSecondsLeft() == 0 || lastSum == wordsCount)
+                        aThis.showFooter();
+                }, 500);
+            };
+
+            var hideFooterDelayed = function(){
+                setTimeout(function(){
+                    if (timer.getSecondsLeft() > 0 && lastSum < wordsCount)
+                        aThis.hideFooter();
+                }, 500);
+            };
+
+            /**
+             * Shows footer and information buttons, stops timer.
+             */
+            var finalizeRound = function(){
+                timer.pause();
+                showFooterDelayed();
+                for (var i = 0; i < words.length; i++)
+                    words[i].showInfo();
+            };
+
+            /**
+             * Hides footer and information buttons, resumes timer.
+             */
+            var unfinalizeRound = function(){
+                timer.resume();
+                hideFooterDelayed();
+                for (var i = 0; i < words.length; i++)
+                    words[i].hideInfo();
+            };
+
+            this.container.on('header_left_click', function(){
+                timer.pause();
+                if (confirm(tmp_resources.children('.cr_tmp_stop_round' + (earnedPoints == 0 ? '_0' : '')).text()))
+                    aThis.container.trigger('screen_close');
+                else
+                    timer.resume();
+            });
+
+            this.container.on('footer_click', function(){
+                if (timer.getSecondsLeft() == 0 || lastSum == wordsCount)  // Otherwise click happened during animation
+                {
+                    teamManager.updateTeamScore(teamIndex, teamPoints + earnedPoints);
+                    aThis.container.trigger('screen_close');
+                }
+            });
+
+            timer.container.on('time_elapsed', function(){
+                finalizeRound();
+            });
+
+            return this;
+        }
+
+        /**
+         * Results screen class.
+         * @param {ScreenManager} screenManager manager to store screen in
+         * @param {InterfaceLanguageManager} interfaceLanguageManager
+         * @param {TeamManager} teamManager
+         * @returns {ResultsScreen}
+         * @constructor
+         * @see Screen class
+         * WordsScreen.container provides the following additional events:
+         *         'screen_close' (single additional argument — whether the game continues ('continue') or ends ('finish'))
+         */
+        function ResultsScreen(screenManager, interfaceLanguageManager, teamManager)
+        {
+            /**
+             * Reinitializes the window.
+             */
+            this.reset = function(){
+                var results = teamManager.getResults();
+                teamsContainer.empty().css('height', 50 * results.length - 2);
+                for (var i = 0; i < results.length; i++)
+                {
+                    var gradientId = 'resultsScreen_' + Math.floor(1000000 * Math.random()) + '_' + Math.floor(1000000 * Math.random()) + '_' + i;
+                    teamsContainer.append(
+                            '<div class="c_team">' +
+                            '<span class="c_caption">' + results[i][0] + '</span>' +
+                            '<span class="c_points"><span class="c_inner">' + results[i][2] + '</span>' +
+                            '<svg class="c_star" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="12px" height="12px" viewBox="0 0 12 12" enable-background="new 0 0 12 12" xml:space="preserve"><polygon points="6,0 7.834,3.979 12,4.583 8.968,7.647 9.708,12 6,9.915 2.292,12 3.032,7.647 0,4.583 4.166,3.979 "/></svg>' +
+                            '<svg class="c_gradient" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" width="60px" height="49px"><defs><linearGradient x1="0%" y1="0%" x2="100%" y2="0%" id="' + gradientId + '"><stop offset="0%" style="stop-opacity:0" /><stop offset="34%" style="stop-opacity:1" /><stop offset="100%" style="stop-opacity:1" /></linearGradient></defs><rect x="0" y="0" width="60" height="49" fill="url(#' + gradientId + ')"></rect></svg>' +
+                            '</span></div>'
+                    );
+                }
+            };
+
+            var aThis = this;
+
+            Screen.call(this, screenManager, interfaceLanguageManager, {'caption': 'results_screen', 'right': 'settings'}, {'buttons': [{'caption': 'continue', 'class': 'green bold', 'id': 'continue'}, {'caption': 'finish', 'class': 'blue normal', 'id': 'finish'}], 'visible': true});
+            this.contentContainer.addClass('resultsScreen');
+            this.contentContainer.append('<div class="c_teams"></div>');
+            var teamsContainer = this.contentContainer.children('.c_teams');
+
+            var tmp_resources = $('<span class="c_resources"></span>');
+            tmp_resources.append('<span class="cr_finish_alert"></span>');
+            this.contentContainer.append(tmp_resources);
+            tmp_resources.children('span').each(function(){
+                interfaceLanguageManager.manage($(this), this.className.substr('cr_'.length));
+            });
+
+            this.container.on('footer_click', function(event, id){
+                switch (id)
+                {
+                    case 'continue':
+                        aThis.container.trigger('screen_close', [id]);
+                        break;
+                    case 'finish':
+                        if (confirm(tmp_resources.children('.cr_finish_alert').text()))
+                            aThis.container.trigger('screen_close', [id]);
+                        break;
+                }
+            });
+            return this;
+        }
+
+        /**
+         * Screen manager.
+         * @returns {ScreenManager}
+         * @constructor
+         * ScreenManager.container is (jQuery) DIV container for the manager's screens.
+         * ScreenManager.currentScreen is a Screen object corresponding to the currently shown screen (null if none).
+         * ScreenManager.scale is a current scale factor.
+         */
+        function ScreenManager()
+        {
+            var aThis = this;
+            var container = $('<div class="screenManager"><div class="hiddenScreens"></div><div class="screensActivityCover"></div><div class="screens"></div></div>');
+            this.container = container;
+            this.currentScreen = null;
+
+            /**
+             * Updates active screen's size according to the current window size.
+             */
+            var resetSizes = function(){
+                var w = $(window).width(), h = $(window).height();
+                if (w >= 320 && w <= 322 && h >= w) // Viewport width in meta tag is set to 322 because value 320 (or less) is replaced with device's width in Android browser
+                {
+                    container.css({
+                        'width': '',
+                        'height': '',
+                        'transform-origin': '',
+                        '-webkit-transform-origin': '',
+                        'transform': '',
+                        '-webkit-transform': ''
+                    });
+                    aThis.scale = 1;
+                }
+                else
+                {
+                    var effectiveWidth = Math.min(w, h / 1.5);
+                    var scale = effectiveWidth / 320;
+                    scale = Math.floor(scale * 100) / 100;  // Rounding for better scaling results; using floor instead of round in order for w/scale quotient not to become less than 320
+                    container.css({
+                        'width': Math.ceil(w / scale),
+                        'height': Math.ceil(h / scale),
+                        'transform-origin': '0 0',
+                        '-webkit-transform-origin': '0 0',
+                        'transform': 'scale(' + scale + ',' + scale + ')',
+                        '-webkit-transform': 'scale(' + scale + ',' + scale + ')'
+                    });
+                    aThis.scale = scale;
+                }
+            };
+            resetSizes();
+            $(window).on('resize', resetSizes);
+
+            var cover = container.children('.screensActivityCover');
+
+            /** Puts a screen's container into hidden internal storage.
+             * @param {Screen} screen the screen
+             */
+            this.storeScreen = function(screen){
+                container.children('.hiddenScreens').append(screen.container);
+            };
+
+            /**
+             * Locks user interaction with screens.
+             */
+            this.lock = function(){
+                cover.css('display', 'block');
+            };
+
+            /**
+             * Unlocks user interaction with screens.
+             */
+            this.unlock = function(){
+                cover.css('display', '');
+            };
+
+            /**
+             * Updates active screen.
+             * @param {Screen} screen the screen
+             * @param {string} animation from the list 'slide_fade', 'slide_back', 'none'
+             */
+            this.putScreen = function(screen, animation){
+                var screens = container.children('.screens');
+                if (aThis.currentScreen)
+                    aThis.currentScreen.container.before(screen.container); // So the new screen is placed behind the old one: they may overlap by 1 pixel during transitions and on some devices there can be delay before the transition starts
+                else
+                    screens.append(screen.container);
+                var finish = function(){
+                    if (aThis.currentScreen)
+                        aThis.storeScreen(aThis.currentScreen);
+                    aThis.currentScreen = screen;
+                };
+                var slide_start = function(){
+                    aThis.lock();
+                    screens.addClass('slide');
+                };
+                var slide_finish = function(){
+                    screens.removeClass('slide slide_fade slide_back').css({
+                        'transform': '',
+                        '-webkit-transform': ''
+                    });
+                    screen.container.css({'left': ''});
+                    finish();
+                    aThis.unlock();
+                };
+                var transitionEvents = 'transitionend webkitTransitionEnd oTransitionEnd otransitionend';
+                var screenShift;
+                switch (animation)
+                {
+                    case 'slide_fade':
+                        slide_start();
+                        screenShift = aThis.currentScreen.container.width() - 1;    // -1 is to avoid possible gap between the screens
+                        screen.container.css('left', screenShift + 'px');
+                        screens.on(transitionEvents, function(){
+                            screens.off(transitionEvents);
+                            slide_finish();
+                        });
+                        screens.addClass('slide_fade');
+                        screens.css({
+                            'transform': 'translateX(-' + screenShift + 'px)',
+                            '-webkit-transform': 'translateX(-' + screenShift + 'px)'
+                        });
+                        screen.fadeIn();
+                        break;
+                    case 'slide_back':
+                        slide_start();
+                        screenShift = screen.container.width() - 1;    // -1 is to avoid possible gap between the screens
+                        screen.container.css('left', '-' + screenShift + 'px');
+                        screens.on(transitionEvents, function(){
+                            screens.off(transitionEvents);
+                            slide_finish();
+                        });
+                        screens.addClass('slide_back');
+                        screens.css({
+                            'transform': 'translateX(' + screenShift + 'px)',
+                            '-webkit-transform': 'translateX(' + screenShift + 'px)'
+                        });
+                        break;
+                    default:
+                        finish();
+                        break;
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Settings and storage manager.
+         * @returns {SettingsManager}
+         * @constructor
+         */
+        function SettingsManager()
+        {
+            /**
+             * Retrieves value for given parameter while also verifying it and replacing with default value if it's incorrect or not set.
+             * @param {string} parameter parameter name
+             * @returns {string|boolean|number} null if parameter name is incorrect or parameter value otherwise
+             */
+            this.getValue = function(parameter){
+                if (types[parameter] === undefined)
+                    return null;
+                var stored = localStorage.getItem(parameter);
+                if (stored === null)
+                    return defaultValues[parameter];
+                else
+                {
+                    var result = stringToValue(stored, types[parameter]);
+                    if (allowedValues[parameter].indexOf(result) != -1)
+                        return result;
+                    else
+                        return defaultValues[parameter];
+                }
+            };
+
+            /**
+             * Sets value for given parameter in a permanent storage.
+             * @param {string} parameter parameter name
+             * @param {string|boolean|number} value for the parameter
+             */
+            this.setValue = function(parameter, value){
+                localStorage.setItem(parameter, valueToString(value, types[parameter]));
+            };
+
+            /**
+             * Retrieves set of allowed value for a given parameter.
+             * @param {string} parameter parameter name
+             * @returns {[string]|[boolean]|[number]} null if parameter name is incorrect or array of allowed values otherwise
+             */
+            this.getAllowedValues = function(parameter){
+                return allowedValues[parameter] || null;
+            };
+
+            /**
+             * Prepares value for being stored as a string.
+             * @param {string|boolean|number} value
+             * @param {string} type type of the value: either 'integer', 'boolean' or 'string'
+             * @returns {string}
+             */
+            var valueToString = function(value, type){
+                    switch (type)
+                    {
+                        case 'integer':
+                            return value.toString();
+                        case 'boolean':
+                            return value ? '1' : '0';
+                        default:
+                            return value;
+                    }
+            };
+
+            /**
+             * Restores value that was being stored as a string.
+             * @param {string} string stored version of the value
+             * @param {string} type type of the value: either 'integer', 'boolean' or 'string'
+             * @returns {string|boolean|number}
+             */
+            var stringToValue = function(string, type){
+                switch (type)
+                {
+                    case 'integer':
+                        return Number(string);
+                    case 'boolean':
+                        return string != '0';
+                    default:
+                        return string;
+                }
+            };
+
+            var types = {
+                'language': 'string',
+                'sound': 'boolean',
+                'words': 'integer',
+                'time': 'integer',
+                'orientation_notification': 'boolean'
+            };
+            var allowedValues = {
+                'language': ['en', 'ru', 'uk'],
+                'sound': [true, false],
+                'words': [3, 5, 8, 10, 12],
+                'time': [30, 60, 90, 120, 150],
+                'orientation_notification': [false, true]
+            };
+            var defaultValues = {
+                'language': 'en',
+                'sound': true,
+                'words': 10,
+                'time': 60,
+                'orientation_notification': false
+            };
+            var sysLanguage = (window.navigator.language || window.navigator.browserLanguage || defaultValues['language']).toLowerCase().replace(/-.*$/, '');
+            if (allowedValues['language'].indexOf(sysLanguage) != -1)
+                defaultValues['language'] = sysLanguage;
+
+            return this;
+        }
+
+        /**
+         * Team manager.
+         * @returns {TeamManager}
+         * @constructor
+         */
+        function TeamManager()
+        {
+            /**
+             * Retrieves list of the teams.
+             * @returns {[string|number]} each element is a three-element array with first element being team name, second being team's language of choice and third being the team's score; ordered according to the playing queue
+             */
+            this.getTeams = function(){
+                return teams;
+            };
+
+            /**
+             * Adds new team to the beginning of the list.
+             * @param {string} name name of the team
+             * @param {string} language team's language of choice
+             */
+            this.addTeam = function(name, language){
+                teams.unshift([name, language, 0]);
+                save();
+            };
+
+            /**
+             * Removes a team from the list.
+             * @param {number} index index of the team (0-based)
+             */
+            this.deleteTeam = function(index){
+                teams.splice(index, 1);
+                save();
+            };
+
+            /**
+             * Alters team name and language.
+             * @param {number} index index of the team (0-based)
+             * @param {string} name new name of the team
+             * @param {string} language new team's language of choice
+             */
+            this.alterTeam = function(index, name, language){
+                teams[index][0] = name;
+                teams[index][1] = language;
+                save();
+            };
+
+            /**
+             * Updates team score.
+             * @param {number} index index of the team (0-based)
+             * @param {number} points new score
+             */
+            this.updateTeamScore = function(index, points){
+                teams[index][2] = points;
+                save();
+            };
+
+            /**
+             * Puts one of the teams in the lowest position.
+             * @param {number} index index of the team (0-based)
+             */
+            this.lowerTeam = function(index){
+                teams.push(teams[index]);
+                teams.splice(index, 1);
+                save();
+            };
+
+            /**
+             * Removes all teams from the list.
+             */
+            this.clear = function(){
+                teams.splice(0, teams.length);
+                save();
+            };
+
+            var save = function(){
+                localStorage.setItem('teams', JSON.stringify(teams));
+            };
+
+            /**
+             * Prepares results table.
+             * @returns {[[string|number]]} each element is a four-element array with first element being team name, second being team's language of choice, third being the team's score and fourth being index of the team in original array; sorted by score, then by original index (in descending order)
+             */
+            this.getResults = function(){
+                var result = [];
+                for (var i = 0; i < teams.length; i++)
+                    result.push([teams[i][0], teams[i][1], teams[i][2], i]);
+                result.sort(function(a, b){
+                    if (a[2] < b[2])
+                        return 1;
+                    else if (a[2] > b[2])
+                        return -1;
+                    else if (a[3] < b[3])
+                        return 1;
+                    else if (a[3] > b[3])
+                        return -1;
+                    else
+                        return 0;
+                });
+                return result;
+            };
+
+            var stored = localStorage.getItem('teams'), teams;
+            if (stored === null || stored == '')
+                teams = [];
+            else try
+            {
+                teams = JSON.parse(stored);
+            } catch(e) {
+                teams = [];
+            }
+
+            return this;
+        }
+
+        /**
+         * Words-to-guess manager.
+         * @returns {WordManager}
+         * @constructor
+         */
+        function WordManager()
+        {
+            /**
+             * Returns random word for given language.
+             * @param {string} language
+             * @returns {string}
+             */
+            this.getWord = function(language){
+                if (current[language] == -1 || current[language] == words[language].length)
+                {
+                    shuffle(words[language]);
+                    current[language] = 0;
+                }
+                var result = words[language][current[language]];
+                current[language]++;
+                return result;
+            };
+
+            /**
+             * Shuffles an array (in place).
+             * @param {Array} array
+             */
+            var shuffle = function(array){
+                for (var i = array.length - 1; i > 0; i--)
+                {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var t = array[i];
+                    array[i] = array[j];
+                    array[j] = t;
+                }
+            };
+
+            var current = {};
+            for (var language in words)
+                if (words.hasOwnProperty(language))
+                    current[language] = -1;
+
+            return this;
+        }
+
+
+        /**
+         * App controller.
+         * @param {object} container jQuery element to contain the app
+         * @returns {Controller}
+         * @constructor
+         * Controller.interfaceLanguageManager is an InterfaceLanguageManager used by application.
+         * Controller.screenManager is a ScreenManager used by application.
+         * Controller.settingsManager is a SettingsManager used by application.
+         * Controller.teamManager is a TeamManager used by application.
+         * Controller.wordManager is a WordManager used by application.
+         * Screens: Controller.startScreen, Controller.rulesScreen, Controller.settingsScreen, Controller.teamsScreen, Controller.wordsScreen, Controller.resultsScreen
+         */
+        function Controller(container)
+        {
+            var aThis = this;
+
+            /**
+             * Runs the application.
+             */
+            this.run = function(){
+                aThis.interfaceLanguageManager.updateElements();
+                if (aThis.teamManager.getTeams().length == 0)
+                    aThis.screenManager.putScreen(aThis.startScreen);
+                else
+                {
+                    aThis.teamsScreen.reset(true);
+                    aThis.resultsScreen.reset();
+                    aThis.screenManager.putScreen(aThis.resultsScreen);
+                }
+            };
+
+            var initApp = function(){
+
+                /**
+                 * Checks whether the (x, y) point lies inside the r rectangle.
+                 * @param {number} r
+                 * @param {number} x
+                 * @param {number} y
+                 * @returns {boolean}
+                 */
+                var insideRect = function(r, x, y){
+                    return x >= r.left && y >= r.top && x < r.left + r.width && y < r.top + r.height;
+                };
+
+                /**
+                 * Checks whether the touch event spot lies inside the element area.
+                 * @param {HTMLElement} el element
+                 * @param {TouchEvent} event
+                 * @returns {boolean}
+                 */
+                var insideElement = function(el, event){
+                    return insideRect(el.getBoundingClientRect(), event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+                };
+
+                container.on('touchstart mousedown', '.button:not(.disabled)', function(event){
+                    event.preventDefault();
+                    $(this).addClass('active');
+                    $(this).trigger('button_activated');
+                });
+                container.on('touchend', '.button:not(.disabled)', function(event){
+                    if (event.originalEvent.targetTouches.length == 0)
+                    {
+                        $(this).removeClass('active');
+                        $(this).trigger('button_deactivated');
+                    }
+                    if (event.originalEvent.touches.length == 0 && insideElement(this, event.originalEvent))
+                    {
+                        var aThis = this;
+                        setTimeout(function(){  // For button to restore its unpressed state before the click happens
+                            $(aThis).trigger('click');
+                        }, 1);
+                    }
+                });
+                container.on('touchcancel mouseup mouseleave', '.button:not(.disabled)', function(){
+                    $(this).removeClass('active');
+                    $(this).trigger('button_deactivated');
+                });
+
+                aThis.settingsManager = new SettingsManager();
+                aThis.teamManager = new TeamManager();
+                aThis.wordManager = new WordManager();
+                aThis.interfaceLanguageManager = new InterfaceLanguageManager(container, aThis.settingsManager.getValue('language'));
+                aThis.screenManager = new ScreenManager();
+                container.append(aThis.screenManager.container);
+            };
+
+            var initScreens = function(){
+                aThis.startScreen = new StartScreen(aThis.screenManager, aThis.interfaceLanguageManager);
+                aThis.rulesScreen = new RulesScreen(aThis.screenManager, aThis.interfaceLanguageManager);
+                aThis.settingsScreen = new SettingsScreen(aThis.screenManager, aThis.interfaceLanguageManager, aThis.settingsManager);
+                aThis.teamsScreen = new TeamsScreen(aThis.screenManager, aThis.interfaceLanguageManager, aThis.teamManager);
+                aThis.wordsScreen = new WordsScreen(aThis.screenManager, aThis.interfaceLanguageManager, aThis.settingsManager, aThis.teamManager, aThis.wordManager);
+                aThis.resultsScreen = new ResultsScreen(aThis.screenManager, aThis.interfaceLanguageManager, aThis.teamManager);
+
+                var settingsScreen_previous, teamsScreen_previous;
+
+                aThis.startScreen.container.on('start_button_click', function(){
+                    aThis.teamsScreen.reset(true);
+                    teamsScreen_previous = 'start';
+                    aThis.screenManager.putScreen(aThis.teamsScreen, 'slide_fade');
+                });
+                aThis.startScreen.container.on('rules_button_click', function(){
+                    aThis.screenManager.putScreen(aThis.rulesScreen, 'slide_fade');
+                });
+                aThis.startScreen.container.on('settings_button_click', function(){
+                    settingsScreen_previous = 'start';
+                    aThis.screenManager.putScreen(aThis.settingsScreen, 'slide_fade');
+                });
+                aThis.rulesScreen.container.on('header_left_click', function(){
+                    aThis.screenManager.putScreen(aThis.startScreen, 'slide_back');
+                });
+                aThis.settingsScreen.container.on('header_left_click', function(){
+                    aThis.screenManager.putScreen(settingsScreen_previous == 'start' ? aThis.startScreen : aThis.resultsScreen, 'slide_back');
+                });
+                aThis.teamsScreen.container.on('header_left_click', function(){
+                    aThis.screenManager.putScreen(teamsScreen_previous == 'start' ? aThis.startScreen : aThis.resultsScreen, 'slide_back');
+                });
+                aThis.teamsScreen.container.on('start_button_click', function(event, teamIndex){
+                    aThis.wordsScreen.reset(teamIndex);
+                    aThis.screenManager.putScreen(aThis.wordsScreen, 'slide_fade');
+                });
+                aThis.wordsScreen.container.on('screen_close', function(){
+                    aThis.teamsScreen.reset(false); // To lower team that just played in teamManager
+                    aThis.resultsScreen.reset();
+                    aThis.screenManager.putScreen(aThis.resultsScreen, 'slide_fade');
+                });
+                aThis.resultsScreen.container.on('header_right_click', function(){
+                    settingsScreen_previous = 'results';
+                    aThis.screenManager.putScreen(aThis.settingsScreen, 'slide_fade');
+                });
+                aThis.resultsScreen.container.on('screen_close', function(event, id){
+                    switch (id)
+                    {
+                        case 'continue':
+                            aThis.teamsScreen.reset(false); // Although resetting was done immediately after the round, this line could be necessary for situations when the app was restored after closing without finishing the game
+                            teamsScreen_previous = 'results';
+                            aThis.screenManager.putScreen(aThis.teamsScreen, 'slide_fade');
+                            break;
+                        case 'finish':
+                            aThis.teamManager.clear();
+                            aThis.screenManager.putScreen(aThis.startScreen, 'slide_fade');
+                            break;
+                    }
+                });
+
+            };
+
+            initApp();
+            initScreens();
+
+            return this;
+        }
+
+        $(document).ready(function(){
+            var controller = new Controller($('#appContainer'));
+            controller.run();
+        });
+    </script>
+</head>
+<body><div id="appContainer"></div></body>
+</html>
