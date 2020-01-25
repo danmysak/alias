@@ -2583,23 +2583,6 @@
             };
 
             /**
-             * Fixing chrome bug when animated elements would appear over footer; should be called before animation of the screen's content.
-             */
-            this.fixFooterForWebkitAnimation = function(){
-                if (footerContainer)
-                    footerContainer.removeClass('noTransition').addClass('webkit_transition');
-            };
-
-            /**
-             * Should be called after animation of the screen's content.
-             * @see fixFooterForWebkitAnimation
-             */
-            this.unfixFooterForWebkitAnimation = function(){
-                if (footerContainer)
-                    footerContainer.removeClass('webkit_transition');
-            };
-
-            /**
              * Hides screen behind the background-colored cover and fades it out (while fading screen in).
              */
             this.fadeIn = function(){
@@ -2905,9 +2888,7 @@
 
             newTeam.container.on('team_created', function(event, name, language){
                 teamManager.addTeam(name, language);
-                aThis.fixFooterForWebkitAnimation();
                 teamList.addTeam(name, false, function(){
-                    aThis.unfixFooterForWebkitAnimation();
                     aThis.showFooter();
                 });
             });
