@@ -31,7 +31,6 @@
 
         .noTransition {
             transition: none !important;
-            -webkit-transition: none !important;
         }
 
         #appContainer {
@@ -73,20 +72,13 @@
 
         .screenManager > .screens.slide_back {
             transition: transform 400ms;
-            -webkit-transition: -webkit-transform 400ms;
         }
 
         .screenManager > .screens.slide_fade {
             transition: transform 400ms;
-            -webkit-transition: -webkit-transform 400ms;
         }
 
         @keyframes screen_fadeout {
-            0%, 30% {opacity: 1;}
-            100% {opacity: 0;}
-        }
-
-        @-webkit-keyframes screen_fadeout {
             0%, 30% {opacity: 1;}
             100% {opacity: 0;}
         }
@@ -114,7 +106,6 @@
         .screen > .fade.out {
             display: block;
             animation: screen_fadeout 400ms;
-            -webkit-animation: screen_fadeout 400ms;
         }
 
         .screen > .header {
@@ -167,12 +158,6 @@
             font-size: 20px;
             z-index: 3;
             transition: transform 250ms;
-            -webkit-transition: -webkit-transform 250ms;
-        }
-
-        .screen > .footer.webkit_transition {   /* Chrome bug when animated elements would appear over footer */
-            -webkit-transform: translateX(0px) !important;
-            -webkit-transition: -webkit-transform 100000s;
         }
 
         .screen > .footer > .border {
@@ -978,18 +963,7 @@
             100% {opacity: 1;}
         }
 
-        @-webkit-keyframes wordControl_fadein {
-            0% {opacity: 0;}
-            50% {opacity: 0;}
-            100% {opacity: 1;}
-        }
-
         @keyframes wordControl_fadeout {
-            0% {opacity: 1;}
-            100% {opacity: 0;}
-        }
-
-        @-webkit-keyframes wordControl_fadeout {
             0% {opacity: 1;}
             100% {opacity: 0;}
         }
@@ -1013,7 +987,6 @@
             width: 204px;
             overflow: hidden;
             transition: color 250ms;
-            -webkit-transition: color 250ms;
             float: left;    /* Otherwise there are gaps between neighboring .wordControls */
         }
 
@@ -1118,29 +1091,24 @@
             opacity: 0;
             z-index: 1;
             animation: wordControl_fadeout 250ms;
-            -webkit-animation: wordControl_fadeout 250ms;
         }
 
         .wordControl.c_info.c_undeleted .button.c_deleting.c_right {
             animation: none;
-            -webkit-animation: none;
         }
 
         .wordControl.c_noInfo .button.c_deleting.c_right {
             animation: wordControl_fadein 500ms;
-            -webkit-animation: wordControl_fadein 500ms;
         }
 
         .wordControl.c_noInfo.c_deleted .button.c_deleting.c_left {
             animation: wordControl_fadeout 250ms;
-            -webkit-animation: wordControl_fadeout 250ms;
         }
 
         .wordControl.c_info.c_deleted .button.c_deleting.c_left {
             opacity: 1;
             z-index: 4;
             animation: wordControl_fadein 500ms;
-            -webkit-animation: wordControl_fadein 500ms;
         }
 
         .wordControl .button.c_deleting svg.c_delete {
@@ -1187,14 +1155,12 @@
 
         .wordControl.c_noInfo .button.c_info {
             animation: wordControl_fadeout 250ms;
-            -webkit-animation: wordControl_fadeout 250ms;
         }
 
         .wordControl.c_info .button.c_info {
             opacity: 1;
             z-index: 4;
             animation: wordControl_fadein 500ms;
-            -webkit-animation: wordControl_fadein 500ms;
         }
 
         .wordControl .button.c_info svg {
@@ -1263,7 +1229,6 @@
             background: #f63333;
             opacity: 0;
             transition: opacity 200ms;
-            -webkit-transition: opacity 200ms;
         }
 
         .timer.c_elapsed .c_time {
@@ -1491,18 +1456,12 @@
         }
 
         @keyframes teamList_movedown {
-            0% {transform: translateY(0px); -webkit-transform: translateY(0px);}
-            100% {transform: translateY(50px); -webkit-transform: translateY(50px);}
-        }
-
-        @-webkit-keyframes teamList_movedown {
-            0% {transform: translateY(0px); -webkit-transform: translateY(0px);}
-            100% {transform: translateY(50px); -webkit-transform: translateY(50px);}
+            0% {transform: translateY(0px);}
+            100% {transform: translateY(50px);}
         }
 
         .teamListControl.c_adding > .c_list > .c_first {
             animation: teamList_movedown 250ms;
-            -webkit-animation: teamList_movedown 250ms;
         }
 
         .teamListControl > .c_list > .c_second {
@@ -1940,8 +1899,7 @@
             var updateButtonPosition = function(){
                 var left = Math.round(width * currentPosition / (positions - 1));
                 button.css({
-                    'transform': 'translateX(' + left + 'px)',
-                    '-webkit-transform': 'translateX(' + left + 'px)'
+                    'transform': 'translateX(' + left + 'px)'
                 });
             };
             button.addClass('noTransition');    // JIC
@@ -2602,8 +2560,7 @@
                 else
                     footerContainer.addClass('noTransition');
                 footerContainer.css({
-                    'transform': 'translateY(0px) translate3d(0, 0, 0)', // See https://stackoverflow.com/questions/13666688/webkit-transform-scale-making-items-disappear
-                    '-webkit-transform': 'translateY(0px) translate3d(0, 0, 0)'
+                    'transform': 'translateY(0px) translate3d(0, 0, 0)' // See https://stackoverflow.com/questions/13666688/webkit-transform-scale-making-items-disappear
                 });
             };
 
@@ -2621,8 +2578,7 @@
                 else
                     footerContainer.addClass('noTransition');
                 footerContainer.css({
-                    'transform': 'translateY(' + footerShift + 'px)',    // +1 is a border
-                    '-webkit-transform': 'translateY(' + footerShift + 'px)'
+                    'transform': 'translateY(' + footerShift + 'px)'    // +1 is a border
                 });
             };
 
@@ -2762,8 +2718,7 @@
                 var footerShown = ! (footer['visible'] === false);
                 footerContainer.addClass('noTransition');   // JIC
                 footerContainer.css({
-                    'transform': 'translateY(' + (footerShown ? '0' : footerShift) + 'px)', // Initial 0px value is essential because of a possible small difference between 'transform: translateY(0px)' and no-style-at-all appearances
-                    '-webkit-transform': 'translateY(' + (footerShown ? '0' : footerShift) + 'px)'
+                    'transform': 'translateY(' + (footerShown ? '0' : footerShift) + 'px)' // Initial 0px value is essential because of a possible small difference between 'transform: translateY(0px)' and no-style-at-all appearances
                 });
                 footerContainer.removeClass('noTransition');
                 container.append(footerContainer);
@@ -3205,9 +3160,7 @@
                         'width': '',
                         'height': '',
                         'transform-origin': '',
-                        '-webkit-transform-origin': '',
-                        'transform': '',
-                        '-webkit-transform': ''
+                        'transform': ''
                     });
                     aThis.scale = 1;
                 }
@@ -3220,9 +3173,7 @@
                         'width': Math.ceil(w / scale),
                         'height': Math.ceil(h / scale),
                         'transform-origin': '0 0',
-                        '-webkit-transform-origin': '0 0',
-                        'transform': 'scale(' + scale + ',' + scale + ')',
-                        '-webkit-transform': 'scale(' + scale + ',' + scale + ')'
+                        'transform': 'scale(' + scale + ',' + scale + ')'
                     });
                     aThis.scale = scale;
                 }
@@ -3275,8 +3226,7 @@
                 };
                 var slide_finish = function(){
                     screens.removeClass('slide slide_fade slide_back').css({
-                        'transform': '',
-                        '-webkit-transform': ''
+                        'transform': ''
                     });
                     screen.container.css({'left': ''});
                     finish();
@@ -3296,8 +3246,7 @@
                         });
                         screens.addClass('slide_fade');
                         screens.css({
-                            'transform': 'translateX(-' + screenShift + 'px)',
-                            '-webkit-transform': 'translateX(-' + screenShift + 'px)'
+                            'transform': 'translateX(-' + screenShift + 'px)'
                         });
                         screen.fadeIn();
                         break;
@@ -3311,8 +3260,7 @@
                         });
                         screens.addClass('slide_back');
                         screens.css({
-                            'transform': 'translateX(' + screenShift + 'px)',
-                            '-webkit-transform': 'translateX(' + screenShift + 'px)'
+                            'transform': 'translateX(' + screenShift + 'px)'
                         });
                         break;
                     default:
